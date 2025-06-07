@@ -1,78 +1,39 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "playAudio.h"
+#include "wavHandler.h"
+#include <stdio.h>
 
-int main(int argc, void** argv){
-    readHeader("test.wav");
-    return 0;
+/* This routine will be called by the PortAudio engine when audio is needed.
+ * It may called at interrupt level on some machines so don't do anything
+ * that could mess up the system like calling malloc() or free().
+ */
+int patestCallback(const void *inputBuffer, void *outputBuffer,
+                   unsigned long framesPerBuffer,
+                   const PaStreamCallbackTimeInfo *timeInfo,
+                   PaStreamCallbackFlags statusFlags, void *userData) {
+  /* Cast data passed through stream to our structure. */
+  WavInfo *data = (WavInfo *)userData;
+  short *out = (short *)outputBuffer;
+  unsigned int i;
+  (void)inputBuffer; /* Prevent unused variable warning. */
+
+  for (i = 0; i < framesPerBuffer * data->channels; i++) {
+    if ((void *)data->currentPointer - data->bulkData >= data->dataSize) {
+      *out = 0;
+    } else {
+      //*(data->currentPointer) = swapEndian(*(data->currentPointer));
+      *out = *data->currentPointer;
+      data->currentPointer++;
+    }
+    out++;
+  }
+  printf("%li\n", (void *)data->currentPointer - data->bulkData);
+  return 0;
 }
 
-
-int readHeader(char* file){
-    // Open the file for reading.
-    FILE* testFile = fopen("./test.wav","rb");
-
-    // Create buffers to read the data into.
-    int size = 0;
-    char* buf = malloc(4);
-    char* fileType = malloc(4);
-    uint chunkSize = 0;
-    uint formatType = 0;
-    uint channelCount = 0;
-    uint sampleRate = 0;
-    uint bps = 0;
-
-    fread(buf,1,4,testFile);
-    // Check that the first 4 bytes equal buf.
-    if (strcmp("RIFF",buf) != 0){
-        printf("Invalid first 4 bytes: %s\n", buf);
-        goto TIDY;
-    }
-
-    fread(&size,4,1,testFile);
-    fread(fileType,1,4,testFile);
-    fread(buf,1,4,testFile);
-    // Check that the first 4 bytes equal the format marker.
-    if (strncmp("fmt",buf,3) != 0){
-        printf("Expected fmt but got: %s\n", buf);
-        goto TIDY;
-    }
-    fread(&chunkSize,4,1,testFile);
-    fread(&formatType,2,1,testFile);
-    fread(&channelCount,2,1,testFile);
-    fread(&sampleRate,4,1,testFile);
-
-    buf = realloc(buf,6);
-
-    fread(buf, 6,1,testFile);
-    
-    fread(&bps,2,1,testFile);
-
-    buf = realloc(buf,4);
-
-    fread(buf, 1,4,testFile);
-    if (strncmp(buf,"LIST",4) == 0){
-        fread(&chunkSize, 4, 1, testFile);
-        void* scratch = malloc(chunkSize);
-        fread(scratch,chunkSize, 1, testFile);
-        free(scratch);
-        fread(buf, 1,4,testFile);
-    }
-    if (strncmp("data", buf,4) == 0) {
-        printf("reading data!\n");
-    }
-    
-
-    printf("Size: %i Bytes\n", size);
-    printf("Channel Count: %i\n", channelCount);
-    printf("Sample Rate: %i\n", sampleRate);
-    printf("Sample Size: %i\n", bps);
-
-    printf("%p\n", testFile);
-
-TIDY:
-    fclose(testFile);
-    free(buf);
-    free(fileType);
+short swapEndian(short n) {
+  short leftByte = (n & 0x000000FF);
+  short rightByte = (n & 0x0000FF00);
+  leftByte = leftByte << 8;
+  rightByte = rightByte >> 8;
+  return leftByte | rightByte;
 }
