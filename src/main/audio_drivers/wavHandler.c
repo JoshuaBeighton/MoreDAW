@@ -61,6 +61,9 @@ TIDY:
   return 0;
 }
 
+/*
+  Read a format block of a wav file.
+*/
 int readHeaderBlock(FILE *file, WavInfo *output) {
   printf("Reading Header Block!\n");
   char *buf = malloc(6);
@@ -71,6 +74,7 @@ int readHeaderBlock(FILE *file, WavInfo *output) {
   // Bits per sample.
   uint bps = 0;
 
+  // Read the values from the file.
   fread(&chunkSize, 4, 1, file);
   fread(&formatType, 2, 1, file);
   fread(&channelCount, 2, 1, file);
@@ -78,17 +82,22 @@ int readHeaderBlock(FILE *file, WavInfo *output) {
   fread(buf, 6, 1, file);
   fread(&bps, 2, 1, file);
 
+  // Set the values in the output struct.
   output->channels = channelCount;
   output->sampleRate = sampleRate;
   output->sampleSize = bps;
   
-  
+  // If there are extra bytes, skip them before returning.
   if (chunkSize > 16){
     // Skip rest of bytes
     buf = realloc(buf, chunkSize - 16);
     fread(buf, chunkSize-16, 1, file);
   }
+
+  // Free the buffer with spare data.
   free(buf);
+
+  // Return the amount of bytes consumed.
   return chunkSize + 4;
 }
 
