@@ -1,10 +1,7 @@
 #include "playAudio.h"
 #include "wavHandler.h"
-#include <stdio.h>
 
 /* This routine will be called by the PortAudio engine when audio is needed.
- * It may called at interrupt level on some machines so don't do anything
- * that could mess up the system like calling malloc() or free().
  */
 int patestCallback(const void *inputBuffer, void *outputBuffer,
                    unsigned long framesPerBuffer,
@@ -14,26 +11,21 @@ int patestCallback(const void *inputBuffer, void *outputBuffer,
   WavInfo *data = (WavInfo *)userData;
   short *out = (short *)outputBuffer;
   unsigned int i;
-  (void)inputBuffer; /* Prevent unused variable warning. */
+  (void)inputBuffer; // Prevent unused variable warning.
 
-  for (i = 0; i < framesPerBuffer * data->channels; i++) {
+  // Loop for the whole of the buffer.
+  for (i = 0; i < framesPerBuffer * data->channels * data->sampleSize / 16; i++) {
+    // If overrun the end, loop back to the start.
     if ((void *)data->currentPointer - data->bulkData >= data->dataSize) {
-      *out = 0;
-    } else {
-      //*(data->currentPointer) = swapEndian(*(data->currentPointer));
-      *out = *data->currentPointer;
-      data->currentPointer++;
+      data->currentPointer = (short *)data->bulkData;
     }
+
+    // Write 2 bytes to the output stream.
+    *out = *(short*)data->currentPointer;
+
+    // Increment the pointers.
+    data->currentPointer+=2;
     out++;
   }
-  printf("%li\n", (void *)data->currentPointer - data->bulkData);
   return 0;
-}
-
-short swapEndian(short n) {
-  short leftByte = (n & 0x000000FF);
-  short rightByte = (n & 0x0000FF00);
-  leftByte = leftByte << 8;
-  rightByte = rightByte >> 8;
-  return leftByte | rightByte;
 }

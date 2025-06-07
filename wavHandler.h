@@ -1,11 +1,18 @@
+#include <stdio.h>
+
 typedef struct {
     int channels;
     int sampleRate;
     int sampleSize;
     void* bulkData;
-    short* currentPointer;
+    void* currentPointer;
     int dataSize;
 } WavInfo;
 
-int readHeader(char*, WavInfo*);
+void freeWavInfo(WavInfo*);
+
+int readWavFile(char*, WavInfo*);
+int readDataBlock(FILE*, WavInfo*);
+int readHeaderBlock(FILE*, WavInfo*);
+int readOtherBlock(FILE*, WavInfo*);
 

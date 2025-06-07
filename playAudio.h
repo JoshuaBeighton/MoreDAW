@@ -6,7 +6,9 @@ typedef struct
 }   
 paTestData;
 
-short swapEndian(short);
+typedef struct{
+    unsigned int data : 24;
+} int24;
 
 int patestCallback( const void *inputBuffer, void *outputBuffer,
                            unsigned long framesPerBuffer,
