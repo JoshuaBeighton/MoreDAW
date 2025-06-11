@@ -20,6 +20,11 @@
                                 <property name="label">⏸︎</property>
                             </object>
                         </child>
+                        <child>
+                            <object class="GtkButton" id="stopButton">
+                                <property name="label">⏹</property>
+                            </object>
+                        </child>
                     </object>
                 </child>
             </object>

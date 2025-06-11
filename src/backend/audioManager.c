@@ -66,7 +66,7 @@ void stopAudio(PaStream* stream, WavInfo* w){
     PaError err = Pa_Initialize();
     err = Pa_StopStream( stream );
     w->currentPointer = w->bulkData;
-    if( err != paNoError) printf(  "\n\n\nPortAudio error in pausing: %s\n", Pa_GetErrorText( err ) );
+    if( err != paNoError) printf(  "\n\n\nPortAudio error in stopping: %s\n", Pa_GetErrorText( err ) );
 }
 
 

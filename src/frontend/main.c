@@ -16,12 +16,18 @@ static void pauseSound (GtkWidget *widget, gpointer data){
   pauseAudio(stream,w);
 }
 
+static void stopSound (GtkWidget *widget, gpointer data){
+  g_print ("Stopping Audio!\n");
+  stopAudio(stream,w);
+}
+
 static void activate (GtkApplication *app, gpointer user_data)
 {
   GtkBuilder *build;
   GtkWidget *window;
   GtkWidget *playButton;
   GtkWidget *pauseButton;
+  GtkWidget *stopButton;
 
 
   build = gtk_builder_new_from_file ("src/frontend/moredaw.ui");
@@ -29,9 +35,11 @@ static void activate (GtkApplication *app, gpointer user_data)
 
   playButton = GTK_WIDGET (gtk_builder_get_object (build, "playButton"));
   pauseButton = GTK_WIDGET (gtk_builder_get_object (build, "pauseButton"));
+  stopButton = GTK_WIDGET (gtk_builder_get_object (build, "stopButton"));
 
   g_signal_connect(playButton,"clicked", G_CALLBACK(playAudio),NULL);
   g_signal_connect(pauseButton,"clicked", G_CALLBACK(pauseSound),NULL);
+  g_signal_connect(stopButton,"clicked", G_CALLBACK(stopSound),NULL);
 
   gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
 
