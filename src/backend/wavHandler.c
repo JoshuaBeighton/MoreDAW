@@ -137,3 +137,13 @@ void freeWavInfo(WavInfo * w){
     free(w->bulkData);
     free(w);
 }
+
+int getTotalDuration(WavInfo* w){
+  int divisor = w->sampleRate * w->sampleSize / 8 * w->channels;
+  return w->dataSize / divisor;
+}
+
+int getElapsedDuration(WavInfo* w){
+  int divisor = w->sampleRate * w->sampleSize / 8 * w->channels;
+  return ((int) w->currentPointer - (int) w->bulkData) / divisor;
+}

@@ -1,9 +1,11 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include<unistd.h>
 #include "../backend/audioManager.h"
 
 PaStream* stream = (PaStream*)0;
 WavInfo* w = (WavInfo*) 0;
+
 
 static void playAudio (GtkWidget *widget, gpointer data)
 {
@@ -21,6 +23,8 @@ static void stopSound (GtkWidget *widget, gpointer data){
   stopAudio(stream,w);
 }
 
+
+
 static void activate (GtkApplication *app, gpointer user_data)
 {
   GtkBuilder *build;
@@ -28,6 +32,8 @@ static void activate (GtkApplication *app, gpointer user_data)
   GtkWidget *playButton;
   GtkWidget *pauseButton;
   GtkWidget *stopButton;
+  GtkWidget *elapsedLabel;
+  GtkWidget *totalLabel;
 
 
   build = gtk_builder_new_from_file ("src/frontend/moredaw.ui");
@@ -36,16 +42,29 @@ static void activate (GtkApplication *app, gpointer user_data)
   playButton = GTK_WIDGET (gtk_builder_get_object (build, "playButton"));
   pauseButton = GTK_WIDGET (gtk_builder_get_object (build, "pauseButton"));
   stopButton = GTK_WIDGET (gtk_builder_get_object (build, "stopButton"));
+  elapsedLabel = GTK_WIDGET (gtk_builder_get_object (build, "elapsedTime"));
+  totalLabel = GTK_WIDGET (gtk_builder_get_object (build, "totalTime"));
 
   g_signal_connect(playButton,"clicked", G_CALLBACK(playAudio),NULL);
   g_signal_connect(pauseButton,"clicked", G_CALLBACK(pauseSound),NULL);
   g_signal_connect(stopButton,"clicked", G_CALLBACK(stopSound),NULL);
 
+  char* totalTimeString = malloc(5);
+  char* elapsedTimeString = malloc(5);
+
+  sprintf(elapsedTimeString,"%d:%d/",getElapsedDuration(w) / 60, getElapsedDuration(w) % 60);
+  sprintf(totalTimeString, "%d:%d",getTotalDuration(w) / 60, getTotalDuration(w) % 60);
+
+  gtk_label_set_label(GTK_LABEL(elapsedLabel),elapsedTimeString);
+  gtk_label_set_label(GTK_LABEL(totalLabel),totalTimeString);
+
   gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
 
   gtk_window_present (GTK_WINDOW (window));
+  
   g_object_unref(build);
 }
+
 
 int main (int argc, char **argv)
 {

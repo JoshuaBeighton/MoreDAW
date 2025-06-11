@@ -27,6 +27,13 @@
                         </child>
                     </object>
                 </child>
+                <child>
+                    <object class="GtkBox"> <!-- Body -->
+                        <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+                        <child><object class="GtkLabel" id="elapsedTime"></object></child>
+                        <child><object class="GtkLabel" id="totalTime"></object></child>
+                    </object>
+                </child>
             </object>
         </child>
     </object>
