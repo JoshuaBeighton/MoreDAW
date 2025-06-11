@@ -12,7 +12,8 @@ This will be handled by C, and have no GUI at this point.
 I will use portAudio to process the audio on the backend.
 
 ### Phase 2
-Write the initial GUI in Java using JavaFX. Interact with the C code from before using JNI.
+Write GUI in gtk with a play button, record button and some sort of timer showing the length of the current audio 
+being played.
 
 ### Phase 3
 Use audio drivers to record audio, then play it back / save to uncompressed wav.
