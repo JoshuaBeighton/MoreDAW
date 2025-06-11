@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <object class="GtkApplicationWindow" id="window">
+        <property name="title">rawDAW</property>
+        <property name="default-width">600</property>
+        <property name="default-height">400</property>
+        <child>
+            <object class="GtkBox"> <!-- Top-Level Box -->
+                <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
+                <child>
+                    <object class="GtkBox"> <!-- Header -->
+                        <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+                        <child>
+                            <object class="GtkButton" id="playButton">
+                                <property name="label">►</property>
+                            </object>
+                        </child>
+                        <child>
+                            <object class="GtkButton" id="pauseButton">
+                                <property name="label">⏸︎</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </object>
+</interface>
