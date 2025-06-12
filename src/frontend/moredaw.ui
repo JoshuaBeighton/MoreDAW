@@ -25,6 +25,11 @@
                                 <property name="label">⏹</property>
                             </object>
                         </child>
+                        <child>
+                            <object class="GtkButton" id="recordButton">
+                                <property name="label">R</property>
+                            </object>
+                        </child>
                     </object>
                 </child>
                 <child>
