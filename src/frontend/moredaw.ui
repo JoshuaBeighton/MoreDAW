@@ -8,7 +8,7 @@
             <object class="GtkBox"> <!-- Top-Level Box -->
                 <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
                 <child>
-                    <object class="GtkBox"> <!-- Header -->
+                    <object id="header" class="GtkBox"> <!-- Header -->
                         <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
                         <child>
                             <object class="GtkButton" id="playButton">

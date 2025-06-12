@@ -55,9 +55,25 @@ static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *
   GtkWidget *playButton;
   GtkWidget *pauseButton;
   GtkWidget *stopButton;
+  GtkWidget *header;
   playButton = GTK_WIDGET (gtk_builder_get_object (build, "playButton"));
   pauseButton = GTK_WIDGET (gtk_builder_get_object (build, "pauseButton"));
   stopButton = GTK_WIDGET (gtk_builder_get_object (build, "stopButton"));
+  header = GTK_WIDGET (gtk_builder_get_object (build, "header"));
+
+  gtk_widget_add_css_class(playButton, "my-button");
+  gtk_widget_add_css_class(pauseButton, "my-button");
+  gtk_widget_add_css_class(stopButton, "my-button");
+  gtk_widget_add_css_class(header, "header");
+  gtk_widget_remove_css_class(playButton, "suggested-action");
+  gtk_widget_remove_css_class(playButton, "text-button");
+  gtk_widget_remove_css_class(playButton, "flat");
+  gtk_widget_remove_css_class(pauseButton, "suggested-action");
+  gtk_widget_remove_css_class(pauseButton, "text-button");
+  gtk_widget_remove_css_class(pauseButton, "flat");
+  gtk_widget_remove_css_class(stopButton, "suggested-action");
+  gtk_widget_remove_css_class(stopButton, "text-button");
+  gtk_widget_remove_css_class(stopButton, "flat");
 
   g_signal_connect(playButton,"clicked", G_CALLBACK(playAudio),NULL);
   g_signal_connect(pauseButton,"clicked", G_CALLBACK(pauseSound),NULL);

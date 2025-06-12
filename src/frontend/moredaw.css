@@ -1,5 +1,19 @@
-button{
+.my-button,
+.my-button:hover,
+.my-button:active,
+.my-button:focus{
+    min-height: 40px;
+    min-width: 40px;
     margin: 2px 4px;
-    padding: 5px;
-    color: aqua;
+    background-color: rgb(10,30,50);
+    background-image: none;
+}
+
+button> label {
+    color: white;
+}
+
+.header{
+    min-height: 50px;
+    background-color: rgb(0,0,0);
 }
