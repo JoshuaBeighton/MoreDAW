@@ -1,7 +1,4 @@
-#include <gtk/gtk.h>
-#include <stdio.h>
-#include<unistd.h>
-#include "../backend/audioManager.h"
+#include "main.h"
 
 PaStream* stream = (PaStream*)0;
 WavInfo* w = (WavInfo*) 0;
@@ -29,25 +26,50 @@ static void activate (GtkApplication *app, gpointer user_data)
 {
   GtkBuilder *build;
   GtkWidget *window;
-  GtkWidget *playButton;
-  GtkWidget *pauseButton;
-  GtkWidget *stopButton;
-  GtkWidget *elapsedLabel;
-  GtkWidget *totalLabel;
-
 
   build = gtk_builder_new_from_file ("src/frontend/moredaw.ui");
   window = GTK_WIDGET (gtk_builder_get_object (build, "window"));
 
+  
+  activateHeader(app,user_data,build);
+  activateBody(app,user_data,build);
+  loadCSS(app,user_data);
+  gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
+
+  gtk_window_present (GTK_WINDOW (window));
+  
+  g_object_unref(build);
+}
+
+static void loadCSS(GtkApplication *app, gpointer user_data){
+  GtkCssProvider* css = gtk_css_provider_new();
+  gtk_css_provider_load_from_path(css,"src/frontend/moredaw.css");
+  gtk_style_context_add_provider_for_display(
+    gdk_display_get_default(),
+    GTK_STYLE_PROVIDER(css),
+    GTK_STYLE_PROVIDER_PRIORITY_USER);
+  
+}
+
+static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *build){
+  GtkWidget *playButton;
+  GtkWidget *pauseButton;
+  GtkWidget *stopButton;
   playButton = GTK_WIDGET (gtk_builder_get_object (build, "playButton"));
   pauseButton = GTK_WIDGET (gtk_builder_get_object (build, "pauseButton"));
   stopButton = GTK_WIDGET (gtk_builder_get_object (build, "stopButton"));
-  elapsedLabel = GTK_WIDGET (gtk_builder_get_object (build, "elapsedTime"));
-  totalLabel = GTK_WIDGET (gtk_builder_get_object (build, "totalTime"));
 
   g_signal_connect(playButton,"clicked", G_CALLBACK(playAudio),NULL);
   g_signal_connect(pauseButton,"clicked", G_CALLBACK(pauseSound),NULL);
   g_signal_connect(stopButton,"clicked", G_CALLBACK(stopSound),NULL);
+}
+
+static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *build){
+  GtkWidget *elapsedLabel;
+  GtkWidget *totalLabel;
+
+  elapsedLabel = GTK_WIDGET (gtk_builder_get_object (build, "elapsedTime"));
+  totalLabel = GTK_WIDGET (gtk_builder_get_object (build, "totalTime"));
 
   char* totalTimeString = malloc(5);
   char* elapsedTimeString = malloc(5);
@@ -57,12 +79,6 @@ static void activate (GtkApplication *app, gpointer user_data)
 
   gtk_label_set_label(GTK_LABEL(elapsedLabel),elapsedTimeString);
   gtk_label_set_label(GTK_LABEL(totalLabel),totalTimeString);
-
-  gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (app));
-
-  gtk_window_present (GTK_WINDOW (window));
-  
-  g_object_unref(build);
 }
 
 
@@ -84,4 +100,3 @@ int main (int argc, char **argv)
   g_object_unref (app);
   return status;
 }
-
