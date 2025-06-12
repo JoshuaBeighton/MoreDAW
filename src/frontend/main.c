@@ -23,7 +23,12 @@ static void stopSound(GtkWidget *widget, gpointer data)
 
 static void recordSound(GtkWidget *widget, gpointer data)
 {
+    int bytes = 1000000;
     g_print("Recording!\n");
+    w->bulkData = calloc(bytes,1);
+    w->currentPointer = w->bulkData;
+    w->dataSize = bytes;
+    startRecording(stream,w);
 }
 
 static void activate(GtkApplication *app, gpointer user_data)

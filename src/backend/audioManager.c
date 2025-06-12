@@ -1,8 +1,7 @@
 #include "playAudio.h"
+#include "recordAudio.h"
 #include "audioManager.h"
 #include <stdio.h>
-
-static paTestData data;
 
 PaStream *initialise(WavInfo *w)
 {
@@ -39,7 +38,7 @@ PaStream *initialise(WavInfo *w)
                                                       paFramesPerBufferUnspecified, which
                                                       tells PortAudio to pick the best,
                                                       possibly changing, buffer size.*/
-                               patestCallback, /* this is your callback function */
+                               paPlayCallback, /* this is your callback function */
                                w);             /*This is a pointer that will be passed to
                                                              your callback*/
     return stream;
@@ -79,8 +78,7 @@ void stopAudio(PaStream *stream, WavInfo *w)
 {
     if (Pa_IsStreamActive(stream) == 1)
     {
-        PaError err = Pa_Initialize();
-        err = Pa_StopStream(stream);
+        PaError err = Pa_StopStream(stream);
         w->currentPointer = w->bulkData;
         if (err != paNoError)
             printf("\n\n\nPortAudio error in stopping: %s\n", Pa_GetErrorText(err));
@@ -93,4 +91,46 @@ void closeAudioManager()
     PaError err = Pa_Terminate();
     if (err != paNoError)
         printf("\n\n\nPortAudio error closing driver: %s\n", Pa_GetErrorText(err));
+}
+
+void startRecording(PaStream *stream, WavInfo *w)
+{
+    PaError err = Pa_Initialize();
+
+    if (err != paNoError)
+        printf("\n\n\nPortAudio error: %s\n", Pa_GetErrorText(err));
+    PaSampleFormat sf;
+
+    if (w->sampleSize == 16)
+    {
+        sf = paInt16;
+    }
+    else if (w->sampleSize == 24)
+    {
+        sf = paInt24;
+    }
+    else if (w->sampleSize == 32)
+    {
+        sf = paInt32;
+    }
+    /* Open an audio I/O stream. */
+    err = Pa_OpenDefaultStream(&stream,
+                               2,  /* no input channels */
+                               0,  /* stereo output */
+                               sf, /* 16 bit int output */
+                               w->sampleRate,
+                               256,              /* frames per buffer, i.e. the number
+                                                        of sample frames that PortAudio will
+                                                        request from the callback. Many apps
+                                                        may want to use
+                                                        paFramesPerBufferUnspecified, which
+                                                        tells PortAudio to pick the best,
+                                                        possibly changing, buffer size.*/
+                               paRecordCallback, /* this is your callback function */
+                               w);               /*This is a pointer that will be passed to
+                                                               your callback*/
+
+    err = Pa_StartStream(stream);
+    if (err != paNoError)
+        printf("\n\n\nPortAudio error in recording: %s\n", Pa_GetErrorText(err));
 }

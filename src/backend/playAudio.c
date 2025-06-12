@@ -3,7 +3,7 @@
 
 /* This routine will be called by the PortAudio engine when audio is needed.
  */
-int patestCallback(const void *inputBuffer, void *outputBuffer,
+int paPlayCallback(const void *inputBuffer, void *outputBuffer,
                    unsigned long framesPerBuffer,
                    const PaStreamCallbackTimeInfo *timeInfo,
                    PaStreamCallbackFlags statusFlags, void *userData)
