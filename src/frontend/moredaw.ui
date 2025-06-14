@@ -30,6 +30,11 @@
                                 <property name="label">R</property>
                             </object>
                         </child>
+                        <child>
+                            <object class="GtkButton" id="saveButton">
+                                <property name="label">S</property>
+                            </object>
+                        </child>
                     </object>
                 </child>
                 <child>

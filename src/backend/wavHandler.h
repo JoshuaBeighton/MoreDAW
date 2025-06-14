@@ -17,3 +17,4 @@ int readHeaderBlock(FILE*, WavInfo*);
 int readOtherBlock(FILE*, WavInfo*);
 int getTotalDuration(WavInfo*);
 int getElapsedDuration(WavInfo*);
+int writeWavFile(char*, WavInfo*);

@@ -14,7 +14,7 @@ Write GUI in gtk with a play button, record button and some sort of timer showin
 being played.
 
 ### Phase 3
-Use audio drivers to record audio, then play it back / save to uncompressed wav.
+Use audio drivers to record audio, then play it back / save to uncompressed wav
 
 ### Phase 4
 Introduce multiple tracks with concurrent playback.
@@ -24,3 +24,16 @@ Introduce standard mixing features like level control, gain, FX.
 
 ### Phase 6
 Introduce configuaration from files in ~/.config
+
+
+
+
+
+# TODO Before Phase 4
+- Improve code quality / commenting
+- Figure out how to record variable length audio.
+- Stop recording button
+- Better state management.
+- Make timer update in realtime as audio plays
+- Generate waveform images and show cursor moving through the image.
+- Allow playback from a time within the audio.

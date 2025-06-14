@@ -16,19 +16,15 @@ int readWavFile(char *fileName, WavInfo *output)
     char *chunkIdentifier = malloc(4);
     char *fileType = malloc(4);
     int consumed = 4;
-    printf("test2\n");
     fread(chunkIdentifier, 1, 4, file);
     // Check that the first 4 bytes equal buf.
-    printf("test3\n");
     if (strncmp("RIFF", chunkIdentifier, 4) != 0)
     {
-        printf("Invalid first 4 bytes: %s\n", chunkIdentifier);
+        fprintf(stderr,"Invalid first 4 bytes: %s\n", chunkIdentifier);
         goto TIDY;
     }
-    printf("test4\n");
     fread(&size, 4, 1, file);
     fread(fileType, 1, 4, file);
-    printf("test1\n");
     if (strncmp("WAVE", fileType, 4) != 0)
     {
         fprintf(stderr, "Invalid File Type: %s\n", fileType);
@@ -166,5 +162,46 @@ int getTotalDuration(WavInfo *w)
 int getElapsedDuration(WavInfo *w)
 {
     int divisor = w->sampleRate * w->sampleSize / 8 * w->channels;
-    return ((int)w->currentPointer - (int)w->bulkData) / divisor;
+    return (int)(w->currentPointer - w->bulkData) / divisor;
+}
+
+int writeWavFile(char* filePath, WavInfo* w){
+    FILE *file = fopen(filePath, "wb");
+    if (!file)
+    {
+        return 1;
+    }
+    // Print file info.
+    fprintf(file,"RIFF");
+    int size = w->dataSize + 20;
+    fwrite(&size,4,1,file);
+    fprintf(file,"WAVE");
+
+    // Print format chunk.
+    fprintf(file,"fmt ");
+
+    int formatSize = 16;
+    short fileType = 1;
+    short channels = w->channels;
+    int sampleRate = w->sampleRate;
+    int sampleSize = w->sampleSize;
+    int bytesPerBlock = channels * sampleSize / 8;
+    int bytesPerSecond = bytesPerBlock * sampleRate;
+
+    fwrite(&formatSize,4,1,file);
+    fwrite(&fileType,2,1,file);
+    fwrite(&channels,2,1,file);
+    fwrite(&sampleRate,4,1,file);
+    fwrite(&bytesPerSecond,4,1,file);
+    fwrite(&bytesPerBlock,2,1,file);
+    fwrite(&sampleSize,2,1,file);
+
+
+
+    // Print Data chunk
+    fprintf(file,"data",w->dataSize);
+    fwrite(&(w->dataSize),4,1,file);
+    fwrite(w->bulkData,w->dataSize,1,file);
+    fclose(file);
+    return 0;
 }
