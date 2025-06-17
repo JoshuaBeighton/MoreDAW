@@ -77,8 +77,8 @@ void pauseAudio(PaStream *stream, WavInfo *w)
 void stopAudio(PaStream *stream, WavInfo *w)
 {
     if (Pa_IsStreamActive(stream) == 1)
-    {
-        PaError err = Pa_StopStream(stream);
+    {   
+        PaError err = Pa_AbortStream(stream);
         w->currentPointer = w->bulkData;
         if (err != paNoError)
             printf("\n\n\nPortAudio error in stopping: %s\n", Pa_GetErrorText(err));
@@ -93,7 +93,7 @@ void closeAudioManager()
         printf("\n\n\nPortAudio error closing driver: %s\n", Pa_GetErrorText(err));
 }
 
-void startRecording(PaStream *stream, WavInfo *w)
+void startRecording(PaStream **stream, WavInfo *w)
 {
     PaError err = Pa_Initialize();
 
@@ -114,7 +114,7 @@ void startRecording(PaStream *stream, WavInfo *w)
         sf = paInt32;
     }
     /* Open an audio I/O stream. */
-    err = Pa_OpenDefaultStream(&stream,
+    err = Pa_OpenDefaultStream(stream,
                                2,  /* no input channels */
                                0,  /* stereo output */
                                sf, /* 16 bit int output */
@@ -129,8 +129,8 @@ void startRecording(PaStream *stream, WavInfo *w)
                                paRecordCallback, /* this is your callback function */
                                w);               /*This is a pointer that will be passed to
                                                                your callback*/
-
-    err = Pa_StartStream(stream);
+    
+    err = Pa_StartStream(*stream);
     if (err != paNoError)
         printf("\n\n\nPortAudio error in recording: %s\n", Pa_GetErrorText(err));
 }

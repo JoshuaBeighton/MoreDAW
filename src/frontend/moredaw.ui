@@ -27,12 +27,12 @@
                         </child>
                         <child>
                             <object class="GtkButton" id="recordButton">
-                                <property name="label">R</property>
+                                <property name="label">⬤</property>
                             </object>
                         </child>
                         <child>
                             <object class="GtkButton" id="saveButton">
-                                <property name="label">S</property>
+                                <property name="label">💾</property>
                             </object>
                         </child>
                     </object>

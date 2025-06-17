@@ -7,6 +7,6 @@ void pauseAudio(PaStream*, WavInfo * w);
 
 void stopAudio(PaStream* stream, WavInfo* w);
 
-void startRecording(PaStream* stream, WavInfo* w);
+void startRecording(PaStream** stream, WavInfo* w);
 
 void stopRecording(PaStream* stream, WavInfo* w);

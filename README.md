@@ -32,7 +32,6 @@ Introduce configuaration from files in ~/.config
 # TODO Before Phase 4
 - Improve code quality / commenting
 - Figure out how to record variable length audio.
-- Stop recording button
 - Better state management.
 - Make timer update in realtime as audio plays
 - Generate waveform images and show cursor moving through the image.

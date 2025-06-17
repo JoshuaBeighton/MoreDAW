@@ -1,38 +1,55 @@
 #include "main.h"
+#define recordBufferSize 1000000
 
 PaStream *stream = (PaStream *)0;
 WavInfo *w = (WavInfo *)0;
+State currentState = STOPPED;
 
 static void playAudio(GtkWidget *widget, gpointer data)
 {
-    g_print("Playing Audio!\n");
-    playFile(stream, w);
+    if (currentState == STOPPED)
+    {
+        playFile(stream, w);
+        currentState = PLAYING;
+    }
 }
 
 static void pauseSound(GtkWidget *widget, gpointer data)
 {
-    g_print("Pausing Audio!\n");
-    pauseAudio(stream, w);
+    if (currentState != STOPPED)
+    {
+        pauseAudio(stream, w);
+        currentState = STOPPED;
+    }
 }
 
 static void stopSound(GtkWidget *widget, gpointer data)
 {
-    g_print("Stopping Audio!\n");
-    stopAudio(stream, w);
+    if (currentState != STOPPED)
+    {
+        stopAudio(stream, w);
+        currentState = STOPPED;
+    }
 }
 
 static void recordSound(GtkWidget *widget, gpointer data)
 {
-    int bytes = 10000000;
-    g_print("Recording!\n");
-    w->bulkData = calloc(bytes,1);
-    w->currentPointer = w->bulkData;
-    w->dataSize = bytes;
-    startRecording(stream,w);
+    if (currentState == STOPPED)
+    {
+        w->bulkData = calloc(recordBufferSize, 1);
+        w->currentPointer = w->bulkData;
+        w->dataSize = recordBufferSize;
+        startRecording(&stream, w);
+        currentState = RECORDING;
+    }
 }
 
-static void saveSound(GtkWidget *widget, gpointer data){
-    writeWavFile("res/audio/OUT.wav",w);
+static void saveSound(GtkWidget *widget, gpointer data)
+{
+    if (currentState == STOPPED)
+    {
+        writeWavFile("res/audio/OUT.wav", w);
+    }
 }
 
 static void activate(GtkApplication *app, gpointer user_data)
@@ -81,21 +98,9 @@ static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *
     gtk_widget_add_css_class(playButton, "my-button");
     gtk_widget_add_css_class(pauseButton, "my-button");
     gtk_widget_add_css_class(stopButton, "my-button");
-    gtk_widget_add_css_class(recordButton, "my-button");
+    gtk_widget_add_css_class(recordButton, "red-button");
     gtk_widget_add_css_class(saveButton, "my-button");
     gtk_widget_add_css_class(header, "header");
-    // gtk_widget_remove_css_class(playButton, "suggested-action");
-    // gtk_widget_remove_css_class(playButton, "text-button");
-    // gtk_widget_remove_css_class(playButton, "flat");
-    // gtk_widget_remove_css_class(pauseButton, "suggested-action");
-    // gtk_widget_remove_css_class(pauseButton, "text-button");
-    // gtk_widget_remove_css_class(pauseButton, "flat");
-    // gtk_widget_remove_css_class(stopButton, "suggested-action");
-    // gtk_widget_remove_css_class(stopButton, "text-button");
-    // gtk_widget_remove_css_class(stopButton, "flat");
-    // gtk_widget_remove_css_class(recordButton, "suggested-action");
-    // gtk_widget_remove_css_class(recordButton, "text-button");
-    // gtk_widget_remove_css_class(recordButton, "flat");
 
     g_signal_connect(playButton, "clicked", G_CALLBACK(playAudio), NULL);
     g_signal_connect(pauseButton, "clicked", G_CALLBACK(pauseSound), NULL);
@@ -125,7 +130,7 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
 int main(int argc, char **argv)
 {
     w = malloc(sizeof(WavInfo));
-    if (readWavFile("res/audio/OUT.wav", w) != 0)
+    if (readWavFile("res/audio/ThisIsInst.wav", w) != 0)
     {
         printf("file not found!\n");
         exit(1);

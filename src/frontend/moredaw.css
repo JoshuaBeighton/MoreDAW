@@ -1,7 +1,5 @@
 .my-button,
-.my-button:hover,
-.my-button:active,
-.my-button:focus{
+.red-button{
     min-height: 40px;
     min-width: 40px;
     margin: 4px 4px;
@@ -9,9 +7,15 @@
     background-image: none;
 }
 
-button> label {
+.my-button> label {
     color: white;
 }
+
+.red-button > label {
+    color: red;
+}
+
+
 
 .header{
     min-height: 50px;
