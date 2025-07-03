@@ -1,3 +1,5 @@
+#ifndef WAVHANDLER
+#define WAVHANDLER
 #include <stdio.h>
 
 typedef struct {
@@ -18,3 +20,5 @@ int readOtherBlock(FILE*, WavInfo*);
 int getTotalDuration(WavInfo*);
 int getElapsedDuration(WavInfo*);
 int writeWavFile(char*, WavInfo*);
+
+#endif

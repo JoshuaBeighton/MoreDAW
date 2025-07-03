@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include<unistd.h>
 #include "../backend/audioManager.h"
+#include "waveformManager.h"
 
 static void playAudio (GtkWidget *widget, gpointer data);
 static void pauseSound (GtkWidget *widget, gpointer data);
