@@ -3,8 +3,10 @@
 
 int getHeight(int index, int width, int height, WavInfo *w)
 {
-    int totalSamples = w->dataSize / sizeof(short);
-    int sampleIndex = totalSamples * index / width;
+    long totalSamples = w->dataSize / sizeof(short);
+    long sampleIndex = totalSamples * index / width;
+
+    printf("%i\n", sampleIndex);
 
     short *samples = (short *)w->bulkData;
     short sample = samples[sampleIndex];
@@ -12,7 +14,7 @@ int getHeight(int index, int width, int height, WavInfo *w)
     int halfway = height / 2;
     int amplitude = (sample * halfway) / SHRT_MAX;
 
-    printf("%i\n", amplitude);
+    
 
     return amplitude + halfway;
 }
@@ -20,6 +22,7 @@ int getHeight(int index, int width, int height, WavInfo *w)
 GdkPixbuf *makeWaveform(int width, int height, WavInfo *w)
 {
     guchar *data = malloc(3 * (width * height * sizeof(guchar) + 1));
+    int halfway = height / 2;
     for (int h = 0; h < height; h++)
     {
         for (int j = 0; j < width; j++)
@@ -33,15 +36,20 @@ GdkPixbuf *makeWaveform(int width, int height, WavInfo *w)
     for (int j = 0; j < width; j++)
     {
         int pixelHeight = getHeight(j, width, height, w);
-        data[3 * (width * pixelHeight + j) + 0] = 255;
-        data[3 * (width * pixelHeight + j) + 1] = 100;
-        data[3 * (width * pixelHeight + j) + 2] = 30;
-        data[3 * (width * (pixelHeight + 1) + j) + 0] = 255;
-        data[3 * (width * (pixelHeight + 1) + j) + 1] = 100;
-        data[3 * (width * (pixelHeight + 1) + j) + 2] = 30;
-        data[3 * (width * (pixelHeight - 1) + j) + 0] = 255;
-        data[3 * (width * (pixelHeight - 1) + j) + 1] = 100;
-        data[3 * (width * (pixelHeight - 1) + j) + 2] = 30;
+        if (pixelHeight > halfway){
+            for (int i = halfway; i < pixelHeight; i++){
+                data[3 * (width * i + j) + 0] = 255;
+                data[3 * (width * i + j) + 1] = 100;
+                data[3 * (width * i + j) + 2] = 30;
+            }
+        }
+        else{
+            for (int i = pixelHeight; i < halfway; i++){
+                data[3 * (width * i + j) + 0] = 255;
+                data[3 * (width * i + j) + 1] = 100;
+                data[3 * (width * i + j) + 2] = 30;
+            }
+        }
     }
 
     return gdk_pixbuf_new_from_data(
