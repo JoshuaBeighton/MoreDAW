@@ -163,8 +163,8 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     GtkWidget *totalLabel;
     GtkWidget *bodyBox;
 
-    int waveformHeight = 100;
-    int waveformWidth = 300;
+    int waveformHeight = 200;
+    int waveformWidth = 500;
 
     GtkWidget *waveform = gtk_image_new_from_pixbuf(makeWaveform(waveformWidth,waveformHeight,w));
 
