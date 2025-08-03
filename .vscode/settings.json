@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "audiomanager.h": "c"
+        "audiomanager.h": "c",
+        "gtk.h": "c"
     }
 }

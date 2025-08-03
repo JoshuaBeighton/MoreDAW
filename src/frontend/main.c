@@ -82,7 +82,7 @@ static void activate(GtkApplication *app, gpointer user_data)
     GtkWidget *window;
 
     // Get the builder from the file.
-    build = gtk_builder_new_from_file("src/frontend/moredaw.ui");
+    build = gtk_builder_new_from_file("src/frontend/ui/moredaw.ui");
     // Get the window object from the builder.
     window = GTK_WIDGET(gtk_builder_get_object(build, "window"));
 
@@ -107,7 +107,7 @@ static void loadCSS(GtkApplication *app, gpointer user_data)
 {
     // Get a new css provider then load css from the path.
     GtkCssProvider *css = gtk_css_provider_new();
-    gtk_css_provider_load_from_path(css, "src/frontend/moredaw.css");
+    gtk_css_provider_load_from_path(css, "src/frontend/css/moredaw.css");
 
     // Add the styling to the app.
     gtk_style_context_add_provider_for_display(
@@ -159,34 +159,21 @@ static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *
 static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *build)
 {
     // Get the two elements.
-    GtkWidget *elapsedLabel;
-    GtkWidget *totalLabel;
     GtkWidget *bodyBox;
 
-    int waveformHeight = 500;
+    int waveformHeight = 200;
     int waveformWidth = 600;
 
     GtkWidget *waveform = gtk_image_new_from_pixbuf(makeWaveform(waveformWidth,waveformHeight,w));
 
-    elapsedLabel = GTK_WIDGET(gtk_builder_get_object(build, "elapsedTime"));
-    totalLabel = GTK_WIDGET(gtk_builder_get_object(build, "totalTime"));
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
 
+    GtkWidget *track = g_object_new (track_widget_get_type(), NULL);
     // Add the waveform to the body.
-    gtk_box_append((GtkBox*) bodyBox, waveform);
+    gtk_box_append((GtkBox*) bodyBox, track);
     gtk_widget_set_size_request(waveform, waveformWidth, waveformHeight);
     gtk_widget_set_hexpand(waveform, FALSE);
     gtk_widget_set_vexpand(waveform, FALSE);
-    // Store the elapsed and total times.
-    char *totalTimeString = malloc(5);
-    char *elapsedTimeString = malloc(5);
-
-    sprintf(elapsedTimeString, "%d:%d/", getElapsedDuration(w) / 60, getElapsedDuration(w) % 60);
-    sprintf(totalTimeString, "%d:%d", getTotalDuration(w) / 60, getTotalDuration(w) % 60);
-
-    // Set the text of the labels.
-    gtk_label_set_label(GTK_LABEL(elapsedLabel), elapsedTimeString);
-    gtk_label_set_label(GTK_LABEL(totalLabel), totalTimeString);
 }
 
 
@@ -199,7 +186,7 @@ int main(int argc, char **argv)
     w = malloc(sizeof(WavInfo));
 
     // If there was a problem reading the file, print an error and exit.
-    if (readWavFile("res/audio/ThisIsInst.wav", w) != 0)
+    if (readWavFile("res/audio/test.wav", w) != 0)
     {
         printf("file not found!\n");
         exit(1);

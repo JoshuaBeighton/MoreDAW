@@ -3,6 +3,7 @@
 #include<unistd.h>
 #include "../backend/audioManager.h"
 #include "waveformManager.h"
+#include "track.h"
 
 static void playAudio (GtkWidget *widget, gpointer data);
 static void pauseSound (GtkWidget *widget, gpointer data);

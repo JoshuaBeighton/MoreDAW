@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <template class="track" parent="GtkWidget">
+    <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+        <child>
+            <object class="GtkBox" id="track_left_info"></object>
+        </child>
+        <child>
+            <object class="GtkBox" id="track_waveforms"></object>
+        </child>
+    </template>
+</interface>

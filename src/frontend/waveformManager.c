@@ -6,8 +6,6 @@ int getHeight(int index, int width, int height, WavInfo *w)
     long totalSamples = w->dataSize / sizeof(short);
     long sampleIndex = totalSamples * index / width;
 
-    printf("%i\n", sampleIndex);
-
     short *samples = (short *)w->bulkData;
     short sample = samples[sampleIndex];
 
