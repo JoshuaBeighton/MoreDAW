@@ -3,10 +3,10 @@
     <template class="TrackWidget" parent="GtkBox">
     <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
         <child>
-            <object class="GtkBox" id="track_left_info"></object>
+            <object class="GtkBox" id="left"></object>
         </child>
         <child>
-            <object class="GtkBox" id="track_waveforms"></object>
+            <object class="GtkBox" id="right"></object>
         </child>
     </template>
 </interface>

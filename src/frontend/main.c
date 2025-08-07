@@ -169,6 +169,7 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
 
     GtkWidget *track = g_object_new (track_widget_get_type(), NULL);
+    GtkWidget *label = gtk_label_new("This Is");
     TrackWidget *track_widget = (TrackWidget *)track;
 
     // Add the waveform to the body.
@@ -178,6 +179,7 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     gtk_widget_set_hexpand(waveform, FALSE);
     gtk_widget_set_vexpand(waveform, FALSE);
     gtk_box_append((GtkBox*) track_widget_get_right(track_widget), waveform);
+    gtk_box_append((GtkBox*) track_widget_get_left(track_widget), label);
 }
 
 
