@@ -4,6 +4,9 @@
 
 G_BEGIN_DECLS
 
-G_DECLARE_FINAL_TYPE(TrackWidget, track_widget, TRACK, WIDGET, GtkWidget)
+G_DECLARE_FINAL_TYPE(TrackWidget, track_widget, TRACK, WIDGET, GtkBox)
 
 G_END_DECLS
+
+GtkWidget* track_widget_get_left(TrackWidget *self);
+GtkWidget* track_widget_get_right(TrackWidget *self);
