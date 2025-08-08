@@ -1,1 +1,5 @@
 *.wav
+
+# Binaries
+build/*.o
+moreDAW
