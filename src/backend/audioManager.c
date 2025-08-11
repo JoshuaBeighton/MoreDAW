@@ -3,16 +3,25 @@
 #include "audioManager.h"
 #include <stdio.h>
 
+/**
+ * Initialise the streams.
+ */
 PaStream *initialise(WavInfo *w)
 {
+    // Initialise Port Audio
     PaError err = Pa_Initialize();
 
+    // Get a pointer to a stream.
     PaStream *stream;
 
+    // If there was an error, print it out.
     if (err != paNoError)
         printf("\n\n\nPortAudio error: %s\n", Pa_GetErrorText(err));
+
+    // Store the sample format.
     PaSampleFormat sf;
 
+    // Set the sample format.
     if (w->sampleSize == 16)
     {
         sf = paInt16;
@@ -44,8 +53,12 @@ PaStream *initialise(WavInfo *w)
     return stream;
 }
 
+/**
+ * Play a file given a stream and a pointer to a wav file.
+ */
 void playFile(PaStream *stream, WavInfo *w)
 {
+    // Initialise Port Audio
     PaError err = Pa_Initialize();
 
     // If Audio is still being played, do nothing.
@@ -55,52 +68,80 @@ void playFile(PaStream *stream, WavInfo *w)
         return;
     }
 
+    // Stop the stream.
     err = Pa_StopStream(stream);
+    
+    // If the audio is finished.
     if (w->currentPointer - w->bulkData == w->dataSize)
+        // Reset the pointer to the start of the wav file.
         w->currentPointer = w->bulkData;
     err = Pa_StartStream(stream);
     if (err != paNoError)
         printf("\n\n\nPortAudio error in playback: %s\n", Pa_GetErrorText(err));
 }
 
+/**
+ * Pause running audio.
+ */
 void pauseAudio(PaStream *stream, WavInfo *w)
 {
+    // If the stream is active.
     if (Pa_IsStreamActive(stream) == 1)
     {
         PaError err = Pa_Initialize();
+        // Stop the stream.
         err = Pa_StopStream(stream);
+        // Print out an error message if there was one.
         if (err != paNoError)
             printf("\n\n\nPortAudio error in pausing: %s\n", Pa_GetErrorText(err));
     }
 }
 
+/**
+ * Stop running audio.
+ */
 void stopAudio(PaStream *stream, WavInfo *w)
 {
+    // If the stream is active.
     if (Pa_IsStreamActive(stream) == 1)
     {   
+        // Abort the stream.
         PaError err = Pa_AbortStream(stream);
+        // Reset the pointer.
         w->currentPointer = w->bulkData;
+        // Print any error that occured.
         if (err != paNoError)
             printf("\n\n\nPortAudio error in stopping: %s\n", Pa_GetErrorText(err));
     }
 }
 
+// Close port audio.
 void closeAudioManager()
 {
     // Close portAudio.
     PaError err = Pa_Terminate();
+    
+    // If there was an error, print info.
     if (err != paNoError)
         printf("\n\n\nPortAudio error closing driver: %s\n", Pa_GetErrorText(err));
 }
 
+/**
+ * Start a recording.
+ */
 void startRecording(PaStream **stream, WavInfo *w)
 {
+    // Initialise the stream.
     PaError err = Pa_Initialize();
 
+    // If there was an error print it.
     if (err != paNoError)
         printf("\n\n\nPortAudio error: %s\n", Pa_GetErrorText(err));
+
+    // Store a sample format.
     PaSampleFormat sf;
 
+    // Set the sample format.
     if (w->sampleSize == 16)
     {
         sf = paInt16;

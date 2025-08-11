@@ -21,6 +21,9 @@ static void track_widget_class_init (TrackWidgetClass *klass)
 
 static void track_widget_init (TrackWidget* self){
     gtk_widget_init_template (GTK_WIDGET (self));
+    gtk_widget_add_css_class(self->left, "left_track");
+    gtk_widget_add_css_class(self->right, "right_track");
+    gtk_widget_set_size_request(self->left, 200,200);
 }
 
 GtkWidget* track_widget_get_left(TrackWidget *self) {
@@ -29,4 +32,11 @@ GtkWidget* track_widget_get_left(TrackWidget *self) {
 
 GtkWidget* track_widget_get_right(TrackWidget *self) {
     return self->right;
+}
+
+int getRightWidth(TrackWidget* self){
+  return gtk_widget_get_size(self->right,GTK_ORIENTATION_HORIZONTAL);
+}
+int getRightHeight(TrackWidget* self){
+  return gtk_widget_get_size(self->right,GTK_ORIENTATION_VERTICAL);
 }

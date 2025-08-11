@@ -199,7 +199,7 @@ int writeWavFile(char* filePath, WavInfo* w){
 
 
     // Print Data chunk
-    fprintf(file,"data",w->dataSize);
+    fprintf(file,"data");
     fwrite(&(w->dataSize),4,1,file);
     fwrite(w->bulkData,w->dataSize,1,file);
     fclose(file);

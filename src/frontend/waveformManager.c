@@ -12,12 +12,10 @@ int getHeight(int index, int width, int height, WavInfo *w)
     int halfway = height / 2;
     int amplitude = (sample * halfway) / SHRT_MAX;
 
-    
-
     return amplitude + halfway;
 }
 
-GdkPixbuf *makeWaveform(int width, int height, WavInfo *w)
+GdkPaintable *makeWaveform(int width, int height, WavInfo *w)
 {
     guchar *data = malloc(3 * (width * height * sizeof(guchar) + 1));
     int halfway = height / 2;
@@ -49,15 +47,7 @@ GdkPixbuf *makeWaveform(int width, int height, WavInfo *w)
             }
         }
     }
+    GdkPaintable* image = gdk_paintable_new_empty(width,height);
 
-    return gdk_pixbuf_new_from_data(
-        data,
-        GDK_COLORSPACE_RGB,
-        0,
-        8,
-        width,
-        height,
-        width * 3,
-        NULL,
-        NULL);
+    return image;
 }

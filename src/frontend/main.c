@@ -159,12 +159,7 @@ static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *
 static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *build)
 {
     // Get the two elements.
-    GtkWidget *bodyBox;
-
-    int waveformHeight = 200;
-    int waveformWidth = 600;
-
-    GtkWidget *waveform = gtk_image_new_from_pixbuf(makeWaveform(waveformWidth,waveformHeight,w));
+    GtkWidget *bodyBox;   
 
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
 
@@ -175,6 +170,9 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     // Add the waveform to the body.
     gtk_box_append((GtkBox*) bodyBox, track);
 
+    int waveformHeight = 300;
+    int waveformWidth = 600;
+    GtkWidget *waveform = gtk_image_new_from_paintable(makeWaveform(waveformWidth,waveformHeight,w));
     gtk_widget_set_size_request(waveform, waveformWidth, waveformHeight);
     gtk_widget_set_hexpand(waveform, FALSE);
     gtk_widget_set_vexpand(waveform, FALSE);

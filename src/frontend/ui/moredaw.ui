@@ -5,6 +5,15 @@
         <property name="default-width">600</property>
         <property name="default-height">400</property>
         <child>
+            <object class="GtkFixed">
+                <child>
+                    <object class="GtkBox" id="cursor">
+                        <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
             <object class="GtkBox"> <!-- Top-Level Box -->
                 <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
                 <child>
