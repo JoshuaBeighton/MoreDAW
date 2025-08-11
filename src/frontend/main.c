@@ -170,12 +170,9 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     // Add the waveform to the body.
     gtk_box_append((GtkBox*) bodyBox, track);
 
-    int waveformHeight = 300;
+    int waveformHeight = 100;
     int waveformWidth = 600;
-    GtkWidget *waveform = gtk_image_new_from_paintable(makeWaveform(waveformWidth,waveformHeight,w));
-    gtk_widget_set_size_request(waveform, waveformWidth, waveformHeight);
-    gtk_widget_set_hexpand(waveform, FALSE);
-    gtk_widget_set_vexpand(waveform, FALSE);
+    GtkWidget *waveform = (GtkWidget*) makeWaveform(waveformWidth,waveformHeight,w);
     gtk_box_append((GtkBox*) track_widget_get_right(track_widget), waveform);
     gtk_box_append((GtkBox*) track_widget_get_left(track_widget), label);
 }
@@ -186,6 +183,7 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
  */
 int main(int argc, char **argv)
 {
+    signal(2,(__sighandler_t)tidy);
     // Allocate memory for the wave info.
     w = malloc(sizeof(WavInfo));
 
@@ -217,4 +215,11 @@ int main(int argc, char **argv)
 
     // Return the status.
     return status;
+}
+
+
+void tidy(){
+    closeAudioManager();
+    freeWavInfo(w);
+    exit(0);
 }

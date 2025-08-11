@@ -15,39 +15,35 @@ int getHeight(int index, int width, int height, WavInfo *w)
     return amplitude + halfway;
 }
 
-GdkPaintable *makeWaveform(int width, int height, WavInfo *w)
+static void draw_function(GtkDrawingArea *area,
+                          cairo_t *cr,
+                          int width,
+                          int height,
+                          gpointer data)
 {
-    guchar *data = malloc(3 * (width * height * sizeof(guchar) + 1));
-    int halfway = height / 2;
-    for (int h = 0; h < height; h++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            // Set the background for all the different pixels.
-            data[3 * (width * h + j) + 0] = 255;
-            data[3 * (width * h + j) + 1] = 255;
-            data[3 * (width * h + j) + 2] = 255;
-        }
+    GdkRGBA foreground;
+    foreground.red = 1;
+    foreground.green = 0.1;
+    foreground.blue = 0.4;
+    foreground.alpha = 0.5;
+    int currentHeight;
+    //gtk_widget_get_color(GTK_WIDGET(area),&background);
+    gdk_cairo_set_source_rgba(cr, &foreground);
+    cairo_move_to(cr,0,height / 2);
+    for (int i = 0; i < width; i++){
+        currentHeight = getHeight(i,width,height,(WavInfo*) data);
+        cairo_line_to(cr,i,currentHeight);
     }
-    for (int j = 0; j < width; j++)
-    {
-        int pixelHeight = getHeight(j, width, height, w);
-        if (pixelHeight > halfway){
-            for (int i = halfway; i < pixelHeight; i++){
-                data[3 * (width * i + j) + 0] = 255;
-                data[3 * (width * i + j) + 1] = 100;
-                data[3 * (width * i + j) + 2] = 30;
-            }
-        }
-        else{
-            for (int i = pixelHeight; i < halfway; i++){
-                data[3 * (width * i + j) + 0] = 255;
-                data[3 * (width * i + j) + 1] = 100;
-                data[3 * (width * i + j) + 2] = 30;
-            }
-        }
-    }
-    GdkPaintable* image = gdk_paintable_new_empty(width,height);
+    cairo_stroke(cr);
+}
 
-    return image;
+GtkDrawingArea *makeWaveform(int width, int height, WavInfo *w)
+{
+    GtkDrawingArea *area = (GtkDrawingArea *)gtk_drawing_area_new();
+    gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(area), width);
+    gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(area), height);
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(area),
+                                   draw_function,
+                                   w, NULL);
+    return area;
 }

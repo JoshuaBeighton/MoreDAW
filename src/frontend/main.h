@@ -14,6 +14,7 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
 static void activate (GtkApplication *app, gpointer user_data);
 static void loadCSS(GtkApplication *app, gpointer user_data);
 static void saveSound(GtkWidget *widget, gpointer data);
+static void tidy();
 
 typedef enum {
     STOPPED,

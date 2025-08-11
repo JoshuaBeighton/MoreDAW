@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -I./src/backend -I./src/frontend `pkg-config --cflags gtk4`
-LDFLAGS = ./src/backend/libportaudio.a `pkg-config --libs gtk4` -lm -lasound -ljack -pthread
+CFLAGS = -Wall -g -I./src/backend -I./src/frontend `pkg-config --cflags gtk4`
+LDFLAGS = -g ./src/backend/libportaudio.a `pkg-config --libs gtk4` -lm -lasound -ljack -pthread
 
 # Directories
 BACKEND_DIR = src/backend
