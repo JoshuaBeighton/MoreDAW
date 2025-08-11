@@ -38,21 +38,18 @@ static void track_widget_init(TrackWidget *self)
     gtk_widget_set_size_request(self->left, 200, 0);
 }
 
+/**
+ * Get a pointer to the left child of the track.
+ */
 GtkWidget *track_widget_get_left(TrackWidget *self)
 {
     return self->left;
 }
 
+/**
+ * Get a pointer to the right child of the track.
+ */
 GtkWidget *track_widget_get_right(TrackWidget *self)
 {
     return self->right;
-}
-
-int getRightWidth(TrackWidget *self)
-{
-    return gtk_widget_get_size(self->right, GTK_ORIENTATION_HORIZONTAL);
-}
-int getRightHeight(TrackWidget *self)
-{
-    return gtk_widget_get_size(self->right, GTK_ORIENTATION_VERTICAL);
 }

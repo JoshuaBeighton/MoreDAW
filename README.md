@@ -34,7 +34,4 @@ Introduce configuaration from files in ~/.config
 
 ### QOL Todo
 - Memory Leaks
-- Commenting
-    - waveformManager.c
-    - track.c
 - Handle sigterm

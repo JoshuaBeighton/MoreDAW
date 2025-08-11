@@ -96,7 +96,7 @@ static void activate(GtkApplication *app, gpointer user_data)
     // Set the application to the window.
     gtk_window_set_application(GTK_WINDOW(window), GTK_APPLICATION(app));
 
-    // Present the window. 
+    // Present the window.
     gtk_window_present(GTK_WINDOW(window));
 
     // Unreference the builder.
@@ -159,36 +159,34 @@ static void activateHeader(GtkApplication *app, gpointer user_data, GtkBuilder *
 static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *build)
 {
     // Get the two elements.
-    GtkWidget *bodyBox;   
+    GtkWidget *bodyBox;
 
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
 
-    GtkWidget *track = g_object_new (track_widget_get_type(), NULL);
+    GtkWidget *track = g_object_new(track_widget_get_type(), NULL);
     GtkWidget *label = gtk_label_new("This Is");
     TrackWidget *track_widget = (TrackWidget *)track;
 
     // Add the waveform to the body.
-    gtk_box_append((GtkBox*) bodyBox, track);
-
+    gtk_box_append((GtkBox *)bodyBox, track);
+    gtk_box_append((GtkBox *)track_widget_get_left(track_widget), label);
     int waveformHeight = 100;
-    int waveformWidth = 600;
-    GtkWidget *waveform = (GtkWidget*) makeWaveform(waveformWidth,waveformHeight,w);
-    gtk_box_append((GtkBox*) track_widget_get_right(track_widget), waveform);
-    gtk_box_append((GtkBox*) track_widget_get_left(track_widget), label);
+    int waveformWidth = 1000;
+    GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, w);
+    gtk_box_append((GtkBox *)track_widget_get_right(track_widget), waveform);
 }
-
 
 /**
  * Main Method of program.
  */
 int main(int argc, char **argv)
 {
-    signal(2,(__sighandler_t)tidy);
+    signal(2, (__sighandler_t)tidy);
     // Allocate memory for the wave info.
     w = malloc(sizeof(WavInfo));
 
     // If there was a problem reading the file, print an error and exit.
-    if (readWavFile("res/audio/test.wav", w) != 0)
+    if (readWavFile("res/audio/ThisIsInst.wav", w) != 0)
     {
         printf("file not found!\n");
         exit(1);
@@ -217,8 +215,8 @@ int main(int argc, char **argv)
     return status;
 }
 
-
-void tidy(){
+void tidy()
+{
     closeAudioManager();
     freeWavInfo(w);
     exit(0);
