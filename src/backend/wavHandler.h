@@ -11,8 +11,15 @@ typedef struct {
     int dataSize;
 } WavInfo;
 
+typedef struct {
+    int trackCount;
+    WavInfo** tracks;
+} TrackList;
+
 void freeWavInfo(WavInfo*);
 
+void addTrack_File(TrackList*, char*);
+WavInfo* render(TrackList*);
 int readWavFile(char*, WavInfo*);
 int readDataBlock(FILE*, WavInfo*);
 int readHeaderBlock(FILE*, WavInfo*);

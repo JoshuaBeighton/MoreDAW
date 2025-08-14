@@ -1,10 +1,8 @@
-#include "playAudio.h"
-#include "recordAudio.h"
 #include "audioManager.h"
-#include <stdio.h>
+
 
 /**
- * Initialise the streams.
+ * Initialise the stream.
  */
 PaStream *initialise(WavInfo *w)
 {
@@ -50,6 +48,7 @@ PaStream *initialise(WavInfo *w)
                                paPlayCallback, /* this is your callback function */
                                w);             /*This is a pointer that will be passed to
                                                              your callback*/
+    printf("%p\n",stream);
     return stream;
 }
 
@@ -60,7 +59,7 @@ void playFile(PaStream *stream, WavInfo *w)
 {
     // Initialise Port Audio
     PaError err = Pa_Initialize();
-
+    printf("%p\n", stream);
     // If Audio is still being played, do nothing.
     if (Pa_IsStreamActive(stream) == 1)
     {
@@ -70,11 +69,15 @@ void playFile(PaStream *stream, WavInfo *w)
 
     // Stop the stream.
     err = Pa_StopStream(stream);
-    
+
     // If the audio is finished.
     if (w->currentPointer - w->bulkData == w->dataSize)
-        // Reset the pointer to the start of the wav file.
+    {
+        printf("%p\n", w);
         w->currentPointer = w->bulkData;
+    }
+    // Reset the pointer to the start of the wav file.
+
     err = Pa_StartStream(stream);
     if (err != paNoError)
         printf("\n\n\nPortAudio error in playback: %s\n", Pa_GetErrorText(err));
@@ -104,7 +107,7 @@ void stopAudio(PaStream *stream, WavInfo *w)
 {
     // If the stream is active.
     if (Pa_IsStreamActive(stream) == 1)
-    {   
+    {
         // Abort the stream.
         PaError err = Pa_AbortStream(stream);
         // Reset the pointer.
@@ -120,7 +123,7 @@ void closeAudioManager()
 {
     // Close portAudio.
     PaError err = Pa_Terminate();
-    
+
     // If there was an error, print info.
     if (err != paNoError)
         printf("\n\n\nPortAudio error closing driver: %s\n", Pa_GetErrorText(err));
@@ -170,7 +173,7 @@ void startRecording(PaStream **stream, WavInfo *w)
                                paRecordCallback, /* this is your callback function */
                                w);               /*This is a pointer that will be passed to
                                                                your callback*/
-    
+
     err = Pa_StartStream(*stream);
     if (err != paNoError)
         printf("\n\n\nPortAudio error in recording: %s\n", Pa_GetErrorText(err));

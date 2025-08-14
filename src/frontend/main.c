@@ -3,7 +3,8 @@
 
 // Globals
 PaStream *stream = (PaStream *)0;
-WavInfo *w = (WavInfo *)0;
+WavInfo *rendered = (WavInfo *)0;
+TrackList* masterList = (TrackList*)0;
 State currentState = STOPPED;
 
 // Handler for the play button.
@@ -12,7 +13,7 @@ static void playAudio(GtkWidget *widget, gpointer data)
     // If the audio is currently not playing, play audio and set the current state.
     if (currentState == STOPPED)
     {
-        playFile(stream, w);
+        playFile(stream, rendered);
         currentState = PLAYING;
     }
 }
@@ -25,7 +26,7 @@ static void pauseSound(GtkWidget *widget, gpointer data)
     // If the music is not stopped, pause it.
     if (currentState != STOPPED)
     {
-        pauseAudio(stream, w);
+        pauseAudio(stream, rendered);
         currentState = STOPPED;
     }
 }
@@ -38,7 +39,7 @@ static void stopSound(GtkWidget *widget, gpointer data)
     // If the audio is running in some way, stop it.
     if (currentState != STOPPED)
     {
-        stopAudio(stream, w);
+        stopAudio(stream, rendered);
         currentState = STOPPED;
     }
 }
@@ -52,12 +53,12 @@ static void recordSound(GtkWidget *widget, gpointer data)
     if (currentState == STOPPED)
     {
         // Reset the file that audio is recorded to.
-        w->bulkData = calloc(recordBufferSize, 1);
-        w->currentPointer = w->bulkData;
-        w->dataSize = recordBufferSize;
+        rendered->bulkData = calloc(recordBufferSize, 1);
+        rendered->currentPointer = rendered->bulkData;
+        rendered->dataSize = recordBufferSize;
 
         // Start the recording.
-        startRecording(&stream, w);
+        startRecording(&stream, rendered);
         currentState = RECORDING;
     }
 }
@@ -70,7 +71,7 @@ static void saveSound(GtkWidget *widget, gpointer data)
     // If no audio is playing or recording then write the file to a new wav file.
     if (currentState == STOPPED)
     {
-        writeWavFile("res/audio/OUT.wav", w);
+        writeWavFile("res/audio/OUT.wav", rendered);
     }
 }
 
@@ -172,7 +173,8 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     gtk_box_append((GtkBox *)track_widget_get_left(track_widget), label);
     int waveformHeight = 100;
     int waveformWidth = 1000;
-    GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, w);
+    //printf("Track Count: %i\n", masterList->trackCount);
+    GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, rendered);
     gtk_box_append((GtkBox *)track_widget_get_right(track_widget), waveform);
 }
 
@@ -181,19 +183,18 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
  */
 int main(int argc, char **argv)
 {
+    printf("%li\n",sizeof(short));
     signal(2, (__sighandler_t)tidy);
+    masterList = malloc(sizeof(TrackList));
     // Allocate memory for the wave info.
-    w = malloc(sizeof(WavInfo));
-
-    // If there was a problem reading the file, print an error and exit.
-    if (readWavFile("res/audio/ThisIsInst.wav", w) != 0)
-    {
-        printf("file not found!\n");
-        exit(1);
-    }
-
+    rendered = malloc(sizeof(WavInfo));
+    
+    // Add two tracks to the list.
+    addTrack_File(masterList,"res/audio/boom16.wav");
+    addTrack_File(masterList,"res/audio/clap32.wav");
+    rendered = render(masterList);
     // Initialise the stream.
-    stream = initialise(w);
+    stream = initialise(rendered);
 
     // Get a pointer to the main app.
     GtkApplication *app;
@@ -218,6 +219,6 @@ int main(int argc, char **argv)
 void tidy()
 {
     closeAudioManager();
-    freeWavInfo(w);
+    freeWavInfo(rendered);
     exit(0);
 }

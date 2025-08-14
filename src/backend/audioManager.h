@@ -1,5 +1,9 @@
 #include "portaudio.h"
 #include "wavHandler.h"
+#include "playAudio.h"
+#include "recordAudio.h"
+#include <stdio.h>
+#include <stdlib.h>
 PaStream* initialise(WavInfo* w);
 void playFile(PaStream*, WavInfo * w);
 

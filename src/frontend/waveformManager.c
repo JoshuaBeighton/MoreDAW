@@ -14,7 +14,7 @@ int getHeight(int index, int width, int height, WavInfo *w)
 
     // Get a pointer to the start of the samples.
     short *samples = (short *)w->bulkData;
-
+    
     // Get the sample at the required index.
     short sample = samples[sampleIndex];
 

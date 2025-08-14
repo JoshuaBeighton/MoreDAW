@@ -20,7 +20,7 @@ int readWavFile(char *fileName, WavInfo *output)
     // Check that the first 4 bytes equal buf.
     if (strncmp("RIFF", chunkIdentifier, 4) != 0)
     {
-        fprintf(stderr,"Invalid first 4 bytes: %s\n", chunkIdentifier);
+        fprintf(stderr, "Invalid first 4 bytes: %s\n", chunkIdentifier);
         goto TIDY;
     }
     fread(&size, 4, 1, file);
@@ -81,7 +81,6 @@ TIDY:
 */
 int readHeaderBlock(FILE *file, WavInfo *output)
 {
-    printf("Reading Header Block!\n");
     char *buf = malloc(6);
     int chunkSize = 0;
     int formatType = 0;
@@ -120,7 +119,6 @@ int readHeaderBlock(FILE *file, WavInfo *output)
 
 int readDataBlock(FILE *file, WavInfo *output)
 {
-    printf("Reading Data Block!\n");
     int chunkSize;
     fread(&chunkSize, 4, 1, file);
     void *bulkData = malloc(chunkSize);
@@ -136,7 +134,6 @@ int readDataBlock(FILE *file, WavInfo *output)
 
 int readOtherBlock(FILE *file, WavInfo *output)
 {
-    printf("Reading Unknown Block!\n");
     int chunkSize;
     fread(&chunkSize, 4, 1, file);
     void *bulkData = malloc(chunkSize);
@@ -165,20 +162,21 @@ int getElapsedDuration(WavInfo *w)
     return (int)(w->currentPointer - w->bulkData) / divisor;
 }
 
-int writeWavFile(char* filePath, WavInfo* w){
+int writeWavFile(char *filePath, WavInfo *w)
+{
     FILE *file = fopen(filePath, "wb");
     if (!file)
     {
         return 1;
     }
     // Print file info.
-    fprintf(file,"RIFF");
+    fprintf(file, "RIFF");
     int size = w->dataSize + 20;
-    fwrite(&size,4,1,file);
-    fprintf(file,"WAVE");
+    fwrite(&size, 4, 1, file);
+    fprintf(file, "WAVE");
 
     // Print format chunk.
-    fprintf(file,"fmt ");
+    fprintf(file, "fmt ");
 
     int formatSize = 16;
     short fileType = 1;
@@ -188,20 +186,105 @@ int writeWavFile(char* filePath, WavInfo* w){
     int bytesPerBlock = channels * sampleSize / 8;
     int bytesPerSecond = bytesPerBlock * sampleRate;
 
-    fwrite(&formatSize,4,1,file);
-    fwrite(&fileType,2,1,file);
-    fwrite(&channels,2,1,file);
-    fwrite(&sampleRate,4,1,file);
-    fwrite(&bytesPerSecond,4,1,file);
-    fwrite(&bytesPerBlock,2,1,file);
-    fwrite(&sampleSize,2,1,file);
-
-
+    fwrite(&formatSize, 4, 1, file);
+    fwrite(&fileType, 2, 1, file);
+    fwrite(&channels, 2, 1, file);
+    fwrite(&sampleRate, 4, 1, file);
+    fwrite(&bytesPerSecond, 4, 1, file);
+    fwrite(&bytesPerBlock, 2, 1, file);
+    fwrite(&sampleSize, 2, 1, file);
 
     // Print Data chunk
-    fprintf(file,"data");
-    fwrite(&(w->dataSize),4,1,file);
-    fwrite(w->bulkData,w->dataSize,1,file);
+    fprintf(file, "data");
+    fwrite(&(w->dataSize), 4, 1, file);
+    fwrite(w->bulkData, w->dataSize, 1, file);
     fclose(file);
     return 0;
+}
+
+void addTrack_File(TrackList *tl, char *fileName)
+{
+    WavInfo *track = malloc(sizeof(WavInfo));
+    // If there was a problem reading the file, print an error and exit.
+    if (readWavFile(fileName, track) != 0)
+    {
+        fprintf(stderr, "file not found!\n");
+        exit(1);
+    }
+    tl->trackCount++;
+    tl->tracks = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
+    tl->tracks[tl->trackCount - 1] = track;
+}
+
+int getIntRepresentation(WavInfo *w)
+{
+    int total = 0;
+    if (w->currentPointer >= w->bulkData + w->dataSize)
+        return 0;
+    switch (w->sampleSize)
+    {
+    case 16:
+        total = ((int)*((short *)w->currentPointer)) << 17;
+        w->currentPointer += sizeof(short);
+        break;
+
+    case 24:
+        __uint8_t b0 = ((__uint8_t *)w->currentPointer)[0];
+        __uint8_t b1 = ((__uint8_t *)w->currentPointer)[1];
+        __uint8_t b2 = ((__uint8_t *)w->currentPointer)[2];
+
+        total = ((__uint32_t)b0 << 16) | ((__uint32_t)b1 << 8) | (__uint32_t)b2;
+
+        // Sign extend from 24 bits
+        if (total & 0x00800000) { // if sign bit set
+            total |= 0xFF000000;
+        }
+
+        w->currentPointer += 3;
+
+    case 32:
+        total = *((int *)w->currentPointer);
+        w->currentPointer += sizeof(int);
+        break;
+
+    default:
+        fprintf(stderr, "Invalid Sample Size\n");
+        break;
+    }
+    return total;
+}
+
+WavInfo *render(TrackList *tl)
+{
+    WavInfo *result = malloc(sizeof(WavInfo));
+    int largestFileSize = 0;
+    int sampleSizeInLargestFile = 0;
+    for (int i = 0; i < tl->trackCount; i++)
+    {
+        tl->tracks[i]->currentPointer = tl->tracks[i]->bulkData;
+        if (tl->tracks[i]->sampleRate > largestFileSize)
+        {
+            largestFileSize = tl->tracks[i]->dataSize;
+            sampleSizeInLargestFile = tl->tracks[i]->sampleSize;
+        }
+    }
+    result->sampleSize = 32;
+    result->dataSize = largestFileSize / sampleSizeInLargestFile * 32;
+    result->bulkData = malloc(result->dataSize);
+    result->currentPointer = result->bulkData;
+    result->sampleRate = tl->tracks[0]->sampleRate;
+    result->channels = 2;
+    int sum;
+    for (int i = 0; i < result->dataSize - sizeof(int); i += sizeof(int))
+    {
+        for (int j = 0; j < tl->trackCount; j++)
+        {
+            sum += getIntRepresentation(tl->tracks[j]);
+        }
+        *((int *)result->currentPointer) = sum;
+        result->currentPointer += sizeof(int);
+        sum = 0;
+    }
+    result->currentPointer = result->bulkData;
+    return result;
 }

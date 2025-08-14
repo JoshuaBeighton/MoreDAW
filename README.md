@@ -14,8 +14,6 @@ Write GUI in gtk with a play button, record button and some sort of timer showin
 being played.
 
 TODO:
-- Finish cursor moving along screen.
-- Make waveform fill space of right box.
 - Show more info on the track on the left hand side.
 
 ### Phase 3 - Done
@@ -34,4 +32,5 @@ Introduce configuaration from files in ~/.config
 
 ### QOL Todo
 - Memory Leaks
-- Handle sigterm
+- Render tracks with different sample rates.
+- Render waveforms based on track list.
