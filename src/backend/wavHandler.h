@@ -9,6 +9,7 @@ typedef struct {
     void* bulkData;
     void* currentPointer;
     int dataSize;
+    char* name;
 } WavInfo;
 
 typedef struct {
@@ -27,5 +28,6 @@ int readOtherBlock(FILE*, WavInfo*);
 int getTotalDuration(WavInfo*);
 int getElapsedDuration(WavInfo*);
 int writeWavFile(char*, WavInfo*);
+int convert24bitToInt(__uint8_t *bytes);
 
 #endif

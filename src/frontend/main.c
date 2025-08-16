@@ -4,7 +4,7 @@
 // Globals
 PaStream *stream = (PaStream *)0;
 WavInfo *rendered = (WavInfo *)0;
-TrackList* masterList = (TrackList*)0;
+TrackList *masterList = (TrackList *)0;
 State currentState = STOPPED;
 
 // Handler for the play button.
@@ -91,6 +91,13 @@ static void activate(GtkApplication *app, gpointer user_data)
     activateHeader(app, user_data, build);
     activateBody(app, user_data, build);
 
+    GtkBuilder *toolbarBuilder = gtk_builder_new_from_file("src/frontend/ui/templates/Menu.ui");
+    GMenuModel *menu_model = G_MENU_MODEL(gtk_builder_get_object(toolbarBuilder, "menubar"));
+    
+    GtkWidget *menu_bar = gtk_popover_menu_bar_new_from_model(menu_model);
+    GtkWidget *top_level_box = GTK_WIDGET(gtk_builder_get_object(build, "topBox"));
+    gtk_box_prepend(GTK_BOX(top_level_box), menu_bar);
+
     // Load the CSS for the main page.
     loadCSS(app, user_data);
 
@@ -163,19 +170,22 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
     GtkWidget *bodyBox;
 
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
-
-    GtkWidget *track = g_object_new(track_widget_get_type(), NULL);
-    GtkWidget *label = gtk_label_new("This Is");
-    TrackWidget *track_widget = (TrackWidget *)track;
-
-    // Add the waveform to the body.
-    gtk_box_append((GtkBox *)bodyBox, track);
-    gtk_box_append((GtkBox *)track_widget_get_left(track_widget), label);
     int waveformHeight = 100;
     int waveformWidth = 1000;
-    //printf("Track Count: %i\n", masterList->trackCount);
-    GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, rendered);
-    gtk_box_append((GtkBox *)track_widget_get_right(track_widget), waveform);
+    for (int i = 0; i < masterList->trackCount; i++)
+    {
+
+        GtkWidget *track = g_object_new(track_widget_get_type(), NULL);
+        GtkWidget *label = gtk_label_new(masterList->tracks[i]->name);
+        TrackWidget *track_widget = (TrackWidget *)track;
+
+        gtk_box_append((GtkBox *)bodyBox, track);
+        gtk_box_append((GtkBox *)track_widget_get_left(track_widget), label);
+
+        // printf("Track Count: %i\n", masterList->trackCount);
+        GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, masterList->tracks[i]);
+        gtk_box_append((GtkBox *)track_widget_get_right(track_widget), waveform);
+    }
 }
 
 /**
@@ -183,16 +193,19 @@ static void activateBody(GtkApplication *app, gpointer user_data, GtkBuilder *bu
  */
 int main(int argc, char **argv)
 {
-    printf("%li\n",sizeof(short));
+    printf("%li\n", sizeof(short));
     signal(2, (__sighandler_t)tidy);
     masterList = malloc(sizeof(TrackList));
+
     // Allocate memory for the wave info.
     rendered = malloc(sizeof(WavInfo));
-    
+
     // Add two tracks to the list.
-    addTrack_File(masterList,"res/audio/boom16.wav");
-    addTrack_File(masterList,"res/audio/clap32.wav");
+    addTrack_File(masterList, "res/audio/boom16.wav");
+    addTrack_File(masterList, "res/audio/clap32.wav");
+    addTrack_File(masterList, "res/audio/ThisIsInst.wav");
     rendered = render(masterList);
+
     // Initialise the stream.
     stream = initialise(rendered);
 

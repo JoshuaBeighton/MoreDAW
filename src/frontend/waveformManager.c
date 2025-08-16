@@ -7,24 +7,56 @@
 int getHeight(int index, int width, int height, WavInfo *w)
 {
     // Get the total amount of samples in the wav file.
-    long totalSamples = w->dataSize / sizeof(short);
+    long totalSamples = w->dataSize / w->sampleSize * 8;
 
     // Get the index in the samples.
-    long sampleIndex = totalSamples * index / width;
-
-    // Get a pointer to the start of the samples.
-    short *samples = (short *)w->bulkData;
-    
-    // Get the sample at the required index.
-    short sample = samples[sampleIndex];
+    long sampleIndex = totalSamples * index / width / w->sampleSize * 8;
 
     // Get the height of halfway up the image.
     int halfway = height / 2;
-    // Get the height above / below the index that it should be.
-    int amplitude = (sample * halfway) / SHRT_MAX;
+    if (w->sampleSize == 16)
+    {
+        // Get a pointer to the start of the samples.
+        short *samples = (short *)w->bulkData;
 
-    // Return the height the wave should be.
-    return amplitude + halfway;
+        // Get the sample at the required index.
+        short sample = samples[sampleIndex];
+
+        // Get the height above / below the index that it should be.
+        int amplitude = ((sample << 4) * halfway) / G_MAXINT16;
+
+        // Return the height the wave should be.
+        return amplitude + halfway;
+    }
+    else if (w->sampleSize == 24)
+    {
+        // Get a pointer to the start of the samples.
+        u_int8_t *samples = (u_int8_t *)(w->bulkData+ sampleIndex);
+
+        // Get the sample at the required index.
+        int sample = convert24bitToInt(samples);
+
+        // Get the height above / below the index that it should be.
+        int amplitude = height * (double)((double)(sample) / (double)G_MAXINT32);
+
+        // Return the height the wave should be.
+        return amplitude + halfway;
+    }
+    else if (w->sampleSize == 32)
+    {
+        // Get a pointer to the start of the samples.
+        int *samples = (int *)w->bulkData;
+
+        // Get the sample at the required index.
+        int sample = samples[sampleIndex];
+
+        // Get the height above / below the index that it should be.
+        int amplitude = height * (double)((double)(sample << 4) / (double)G_MAXINT32);
+
+        // Return the height the wave should be.
+        return amplitude + halfway;
+    }
+    return 0;
 }
 
 /**

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 int readWavFile(char *fileName, WavInfo *output)
 {
@@ -211,6 +212,7 @@ void addTrack_File(TrackList *tl, char *fileName)
         fprintf(stderr, "file not found!\n");
         exit(1);
     }
+    track->name = fileName;
     tl->trackCount++;
     tl->tracks = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
     tl->tracks[tl->trackCount - 1] = track;
@@ -229,17 +231,7 @@ int getIntRepresentation(WavInfo *w)
         break;
 
     case 24:
-        __uint8_t b0 = ((__uint8_t *)w->currentPointer)[0];
-        __uint8_t b1 = ((__uint8_t *)w->currentPointer)[1];
-        __uint8_t b2 = ((__uint8_t *)w->currentPointer)[2];
-
-        total = ((__uint32_t)b0 << 16) | ((__uint32_t)b1 << 8) | (__uint32_t)b2;
-
-        // Sign extend from 24 bits
-        if (total & 0x00800000) { // if sign bit set
-            total |= 0xFF000000;
-        }
-
+        total = convert24bitToInt(w->currentPointer);
         w->currentPointer += 3;
 
     case 32:
@@ -287,4 +279,31 @@ WavInfo *render(TrackList *tl)
     }
     result->currentPointer = result->bulkData;
     return result;
+}
+
+int convert24bitToInt(__uint8_t *bytes)
+{
+    // Read the 3 bytes as a 24-bit unsigned integer
+    int32_t total = ((uint32_t)bytes[0] << 16) |
+                    ((uint32_t)bytes[1] << 8) |
+                    (uint32_t)bytes[2];
+
+    // Sign-extend to 32 bits
+    if (total & 0x00800000) // sign bit of 24-bit number
+    {
+        total |= 0xFF000000;
+    }
+
+    // Now scale from signed 24-bit range [-8388608, 8388607]
+    // to signed 32-bit range [-2147483648, 2147483647]
+    if (total >= 0)
+    {
+        total = (int32_t)((int64_t)total * 2147483647LL / 8388607LL);
+    }
+    else
+    {
+        total = (int32_t)((int64_t)total * -2147483648LL / -8388608LL);
+    }
+    //printf("%2x %2x %2x -> %i\n", bytes[0],bytes[1],bytes[2],total);
+    return total;
 }
