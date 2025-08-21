@@ -74,6 +74,7 @@ TIDY:
     fclose(file);
     free(chunkIdentifier);
     free(fileType);
+    output->name = fileName;
     return 0;
 }
 
@@ -212,10 +213,16 @@ void addTrack_File(TrackList *tl, char *fileName)
         fprintf(stderr, "file not found!\n");
         exit(1);
     }
+    printf("JB!\n");
     track->name = fileName;
+    printf("JB!\n");
+    addTrack_WavInfo(tl,track);
+}
+
+void addTrack_WavInfo(TrackList* tl, WavInfo* w){
     tl->trackCount++;
     tl->tracks = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
-    tl->tracks[tl->trackCount - 1] = track;
+    tl->tracks[tl->trackCount - 1] = w;
 }
 
 int getIntRepresentation(WavInfo *w)
@@ -253,6 +260,7 @@ WavInfo *render(TrackList *tl)
     int sampleSizeInLargestFile = 0;
     for (int i = 0; i < tl->trackCount; i++)
     {
+        printf("Track: %s\n",tl->tracks[i]->name);
         tl->tracks[i]->currentPointer = tl->tracks[i]->bulkData;
         if (tl->tracks[i]->sampleRate > largestFileSize)
         {

@@ -20,6 +20,7 @@ typedef struct {
 void freeWavInfo(WavInfo*);
 
 void addTrack_File(TrackList*, char*);
+void addTrack_WavInfo(TrackList* tl, WavInfo* w);
 WavInfo* render(TrackList*);
 int readWavFile(char*, WavInfo*);
 int readDataBlock(FILE*, WavInfo*);

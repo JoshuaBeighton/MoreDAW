@@ -9,6 +9,7 @@
         "istream": "c",
         "ostream": "c",
         "sstream": "c",
-        "streambuf": "c"
+        "streambuf": "c",
+        "stdint.h": "c"
     }
 }
