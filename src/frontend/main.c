@@ -27,9 +27,6 @@ int main(int argc, char **argv)
     //addTrack_File(masterList, "res/audio/ThisIsInst.wav");
     rendered = render(masterList);
 
-    // Initialise the stream.
-    stream = initialise(rendered);
-
     // Get a pointer to the main app.
     GtkApplication *app;
     int status;
@@ -181,6 +178,10 @@ static void activateBody(TrackList* toShow)
 static void playAudio(GtkWidget *widget, gpointer data)
 {
     rendered = render(masterList);
+
+    // Initialise the stream.
+    stream = initialise(rendered);
+    
     // If the audio is currently not playing, play audio and set the current state.
     if (currentState == STOPPED)
     {
@@ -276,8 +277,8 @@ static void on_file_chosen(GObject *source,
         char *filename = g_file_get_path(file);
         addTrack_File(masterList,filename);
         addTrack_File(newTracks,filename);
+        rendered = render(masterList);
         activateBody(newTracks);
-        g_free(filename);
         g_object_unref(file);
     }
     else{
