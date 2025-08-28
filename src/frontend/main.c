@@ -1,5 +1,6 @@
 #include "main.h"
 #define recordBufferSize 1000000
+#define PLAY_BUFFER_SIZE 44100
 
 // Globals
 PaStream *stream = (PaStream *)0;
@@ -13,7 +14,6 @@ GtkBuilder* build;
  */
 int main(int argc, char **argv)
 {
-    printf("%li\n", sizeof(short));
     signal(2, (__sighandler_t)tidy);
     masterList = malloc(sizeof(TrackList));
     masterList->trackCount = 0;
@@ -22,10 +22,7 @@ int main(int argc, char **argv)
     rendered = malloc(sizeof(WavInfo));
 
     // Add two tracks to the list.
-    //addTrack_File(masterList, "res/audio/boom16.wav");
     addTrack_File(masterList, "res/audio/clap32.wav");
-    //addTrack_File(masterList, "res/audio/ThisIsInst.wav");
-    rendered = render(masterList);
 
     // Get a pointer to the main app.
     GtkApplication *app;
@@ -174,17 +171,35 @@ static void activateBody(TrackList* toShow)
     }
 }
 
+static void* render(void* _args){
+    // Fill the buffer to start with.
+    fillBuffer(masterList,rendered,PLAY_BUFFER_SIZE);
+    // Wait for the stream to start
+    while(Pa_IsStreamStopped(stream) == 1){
+        g_usleep(10);
+    }
+
+    // Loop until end of stream.
+    while(Pa_IsStreamActive(stream) == 1){
+        fillBuffer(masterList,rendered,PLAY_BUFFER_SIZE);
+        g_usleep(10);
+    }
+    printf("DONE\n");
+}
+
 // Handler for the play button.
 static void playAudio(GtkWidget *widget, gpointer data)
 {
-    rendered = render(masterList);
+    rendered = createRenderTarget(masterList);
 
     // Initialise the stream.
     stream = initialise(rendered);
-    
+
     // If the audio is currently not playing, play audio and set the current state.
     if (currentState == STOPPED)
     {
+        pthread_t renderThread;
+        pthread_create(&renderThread,NULL,render,NULL);
         playFile(stream, rendered);
         currentState = PLAYING;
     }
@@ -277,9 +292,9 @@ static void on_file_chosen(GObject *source,
         char *filename = g_file_get_path(file);
         addTrack_File(masterList,filename);
         addTrack_File(newTracks,filename);
-        rendered = render(masterList);
         activateBody(newTracks);
         g_object_unref(file);
+        free(newTracks);
     }
     else{
         fprintf(stderr,"Error: %s", err->message);

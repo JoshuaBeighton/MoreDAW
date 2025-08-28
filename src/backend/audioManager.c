@@ -1,6 +1,6 @@
 #include "audioManager.h"
 
-
+float cursorPosition;
 /**
  * Initialise the stream.
  */
@@ -38,7 +38,7 @@ PaStream *initialise(WavInfo *w)
                                w->channels, /* stereo output */
                                sf,          /* 16 bit int output */
                                w->sampleRate,
-                               256,            /* frames per buffer, i.e. the number
+                               paFramesPerBufferUnspecified,            /* frames per buffer, i.e. the number
                                                       of sample frames that PortAudio will
                                                       request from the callback. Many apps
                                                       may want to use
@@ -69,7 +69,7 @@ void playFile(PaStream *stream, WavInfo *w)
 
     // Stop the stream.
     err = Pa_StopStream(stream);
-
+    
     // If the audio is finished.
     if (w->currentPointer - w->bulkData == w->dataSize)
     {

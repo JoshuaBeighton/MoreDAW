@@ -8,8 +8,10 @@ typedef struct {
     int sampleSize;
     void* bulkData;
     void* currentPointer;
+    void* renderPointer;
     int dataSize;
     char* name;
+    float startTime;
 } WavInfo;
 
 typedef struct {
@@ -18,10 +20,9 @@ typedef struct {
 } TrackList;
 
 void freeWavInfo(WavInfo*);
-
 void addTrack_File(TrackList*, char*);
 void addTrack_WavInfo(TrackList* tl, WavInfo* w);
-WavInfo* render(TrackList*);
+WavInfo* createRenderTarget(TrackList*);
 int readWavFile(char*, WavInfo*);
 int readDataBlock(FILE*, WavInfo*);
 int readHeaderBlock(FILE*, WavInfo*);
@@ -30,5 +31,8 @@ int getTotalDuration(WavInfo*);
 int getElapsedDuration(WavInfo*);
 int writeWavFile(char*, WavInfo*);
 int convert24bitToInt(__uint8_t *bytes);
+void fillBuffer(TrackList* tl, WavInfo* w, int bufferSize);
+int getSampleOffset(WavInfo* w);
+int getIntRepresentation(WavInfo *w);
 
 #endif

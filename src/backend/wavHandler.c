@@ -75,6 +75,7 @@ TIDY:
     free(chunkIdentifier);
     free(fileType);
     output->name = fileName;
+    output->startTime = 10;
     return 0;
 }
 
@@ -127,6 +128,7 @@ int readDataBlock(FILE *file, WavInfo *output)
     fread(bulkData, chunkSize, 1, file);
     output->bulkData = bulkData;
     output->currentPointer = bulkData;
+    output->renderPointer = bulkData;
     output->dataSize = chunkSize;
 
     // Return the size of the chunk with the 4 bytes for the size included but not
@@ -213,58 +215,28 @@ void addTrack_File(TrackList *tl, char *fileName)
         fprintf(stderr, "file not found!\n");
         exit(1);
     }
-    printf("JB!\n");
     track->name = fileName;
-    printf("JB!\n");
-    addTrack_WavInfo(tl,track);
+    addTrack_WavInfo(tl, track);
 }
 
-void addTrack_WavInfo(TrackList* tl, WavInfo* w){
+void addTrack_WavInfo(TrackList *tl, WavInfo *w)
+{
     tl->trackCount++;
     tl->tracks = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
     tl->tracks[tl->trackCount - 1] = w;
 }
 
-int getIntRepresentation(WavInfo *w)
-{
-    int total = 0;
-    if (w->currentPointer >= w->bulkData + w->dataSize)
-        return 0;
-    switch (w->sampleSize)
-    {
-    case 16:
-        total = ((int)*((short *)w->currentPointer)) << 17;
-        w->currentPointer += sizeof(short);
-        break;
-
-    case 24:
-        total = convert24bitToInt(w->currentPointer);
-        w->currentPointer += 3;
-
-    case 32:
-        total = *((int *)w->currentPointer);
-        w->currentPointer += sizeof(int);
-        break;
-
-    default:
-        fprintf(stderr, "Invalid Sample Size\n");
-        break;
-    }
-    return total;
-}
-
-WavInfo *render(TrackList *tl)
+WavInfo *createRenderTarget(TrackList *tl)
 {
     WavInfo *result = malloc(sizeof(WavInfo));
     int largestFileSize = 0;
     int sampleSizeInLargestFile = 0;
     for (int i = 0; i < tl->trackCount; i++)
     {
-        printf("Track: %s\n",tl->tracks[i]->name);
-        tl->tracks[i]->currentPointer = tl->tracks[i]->bulkData;
-        if (tl->tracks[i]->sampleRate > largestFileSize)
+        tl->tracks[i]->currentPointer = tl->tracks[i]->bulkData - getSampleOffset(tl->tracks[i]);
+        if (tl->tracks[i]->dataSize + getSampleOffset(tl->tracks[i]) > largestFileSize)
         {
-            largestFileSize = tl->tracks[i]->dataSize;
+            largestFileSize = tl->tracks[i]->dataSize + getSampleOffset(tl->tracks[i]);
             sampleSizeInLargestFile = tl->tracks[i]->sampleSize;
         }
     }
@@ -272,21 +244,57 @@ WavInfo *render(TrackList *tl)
     result->dataSize = largestFileSize / sampleSizeInLargestFile * 32;
     result->bulkData = malloc(result->dataSize);
     result->currentPointer = result->bulkData;
+    result->renderPointer = result->bulkData;
     result->sampleRate = tl->tracks[0]->sampleRate;
     result->channels = 2;
+    printf("Result data size: %i\n", result->dataSize);
+    
+    return result;
+}
+
+void fillBuffer(TrackList* tl, WavInfo* w, int bufferSize){
     int sum;
-    for (int i = 0; i < result->dataSize - sizeof(int); i += sizeof(int))
+    for (int i = 0; i< bufferSize - (w->renderPointer - w->currentPointer); i++)
     {
         for (int j = 0; j < tl->trackCount; j++)
         {
             sum += getIntRepresentation(tl->tracks[j]);
         }
-        *((int *)result->currentPointer) = sum;
-        result->currentPointer += sizeof(int);
+        *((int *)w->renderPointer) = sum;
+        w->renderPointer += sizeof(int);
         sum = 0;
     }
-    result->currentPointer = result->bulkData;
-    return result;
+}
+
+int getIntRepresentation(WavInfo *w)
+{
+    int total = 0;
+
+    if (w->renderPointer >= w->bulkData + w->dataSize || w->renderPointer < w->bulkData)
+        return 0;
+    w->renderPointer += (w->sampleSize / 8);
+    switch (w->sampleSize)
+    {
+    case 16:
+        total = ((int)*((short *)w->renderPointer)) << 17;
+        break;
+
+    case 24:
+        total = convert24bitToInt(w->renderPointer);
+        break;
+    case 32:
+        total = *((int *)w->renderPointer);
+        break;
+    default:
+        fprintf(stderr, "Invalid Sample Size\n");
+        break;
+    }
+    return total;
+}
+
+int getSampleOffset(WavInfo *w)
+{
+    return w->startTime * w->sampleRate * w->sampleSize / 8;
 }
 
 int convert24bitToInt(__uint8_t *bytes)
@@ -312,6 +320,6 @@ int convert24bitToInt(__uint8_t *bytes)
     {
         total = (int32_t)((int64_t)total * -2147483648LL / -8388608LL);
     }
-    //printf("%2x %2x %2x -> %i\n", bytes[0],bytes[1],bytes[2],total);
+    // printf("%2x %2x %2x -> %i\n", bytes[0],bytes[1],bytes[2],total);
     return total;
 }
