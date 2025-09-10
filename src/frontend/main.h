@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include "../backend/audioManager.h"
 #include "waveformManager.h"
@@ -21,6 +22,10 @@ static void openFile(GSimpleAction *action,
 static void on_file_chosen(GObject *source,
                            GAsyncResult *result,
                            gpointer user_data);
+static void quit(GSimpleAction *action,
+                     GVariant *parameter,
+                     gpointer user_data);
+
 static void tidy();
 
 typedef enum

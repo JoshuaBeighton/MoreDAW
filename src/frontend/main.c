@@ -97,7 +97,8 @@ static void loadCSS(GtkApplication *app, gpointer user_data)
 static void activateHeader(GtkApplication *app)
 {
     const GActionEntry app_actions[] = {
-        {"open", openFile, NULL, NULL,NULL}};
+        {"open", openFile, NULL, NULL,NULL},
+        {"quit", quit, NULL, NULL,NULL}};
 
     g_action_map_add_action_entries(G_ACTION_MAP(app),
                                     app_actions,
@@ -142,6 +143,20 @@ static void activateToolbar()
     g_signal_connect(saveButton, "clicked", G_CALLBACK(saveSound), NULL);
 }
 
+char* formatTrackName(char* input){
+    int len = strlen(input);
+    if (len < 15){
+        return input;
+    }
+    char* output = malloc(15);
+    output[0] = '.';
+    output[1] = '.';
+    output[2] = '.';
+    strncpy(output + 3, input + len - 12, 12);
+    output[15] = '\0';
+    return output;
+}
+
 /**
  * Activate the body of the window.
  */
@@ -159,7 +174,7 @@ static void activateBody(TrackList* toShow)
     {
 
         GtkWidget *track = g_object_new(track_widget_get_type(), NULL);
-        GtkWidget *label = gtk_label_new(toShow->tracks[i]->name);
+        GtkWidget *label = gtk_label_new(formatTrackName(toShow->tracks[i]->name));
         TrackWidget *track_widget = (TrackWidget *)track;
 
         gtk_box_append((GtkBox *)bodyBox, track);
@@ -185,6 +200,7 @@ static void* render(void* _args){
         g_usleep(10);
     }
     printf("DONE\n");
+    return NULL;
 }
 
 // Handler for the play button.
@@ -299,6 +315,13 @@ static void on_file_chosen(GObject *source,
     else{
         fprintf(stderr,"Error: %s", err->message);
     }
+}
+
+static void quit(GSimpleAction *action,
+                     GVariant *parameter,
+                     gpointer user_data)
+{
+    tidy();
 }
 
 void tidy()
