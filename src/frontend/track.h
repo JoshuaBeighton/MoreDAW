@@ -10,5 +10,7 @@ G_END_DECLS
 
 GtkWidget* track_widget_get_left(TrackWidget *self);
 GtkWidget* track_widget_get_right(TrackWidget *self);
+GtkWidget* track_widget_get_header(TrackWidget *self);
+GtkWidget* track_widget_get_delete_button(TrackWidget *self);
 int getRightHeight(TrackWidget* self);
 int getRightWidth(TrackWidget* self);

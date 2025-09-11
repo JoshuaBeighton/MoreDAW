@@ -1,3 +1,5 @@
+#pragma once
+
 #include "portaudio.h"
 
 int paRecordCallback( const void *inputBuffer, void *outputBuffer,

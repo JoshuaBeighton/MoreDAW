@@ -219,10 +219,29 @@ void addTrack_File(TrackList *tl, char *fileName)
     addTrack_WavInfo(tl, track);
 }
 
+void removeTrackByIndex(TrackList* tl, int index){
+    // Ensure index is valid.
+    if (index > tl->trackCount || index < 0){
+        fprintf(stderr,"Attempted to delete invalid track, index: %i\n", index);
+        return;
+    }
+    printf("Deleting track %i!\n", index);
+    freeWavInfo(tl->tracks[index]);
+    for (int i = index; i < tl->trackCount - 1; i++){
+        tl->tracks[i] = tl->tracks[i+1];
+    }
+    tl->trackCount -= 1;
+}
+
 void addTrack_WavInfo(TrackList *tl, WavInfo *w)
 {
     tl->trackCount++;
-    tl->tracks = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
+    WavInfo** newbuffer = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
+    if (newbuffer == NULL){
+        fprintf(stderr,"Failed to add new track.\n");
+        return;
+    }
+    tl->tracks = newbuffer;
     tl->tracks[tl->trackCount - 1] = w;
 }
 

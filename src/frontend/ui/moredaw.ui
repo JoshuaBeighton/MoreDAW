@@ -35,6 +35,12 @@
                                 <property name="label">💾</property>
                             </object>
                         </child>
+                        <child>
+                            <object class="GtkButton" id="rewindButton">
+                                <property name="label">⏮</property>
+                            </object>
+                        </child>
+                        
                     </object>
                 </child>
                 <child>

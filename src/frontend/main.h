@@ -10,9 +10,10 @@ static void playAudio(GtkWidget *widget, gpointer data);
 static void pauseSound(GtkWidget *widget, gpointer data);
 static void stopSound(GtkWidget *widget, gpointer data);
 static void recordSound(GtkWidget *widget, gpointer data);
+static void rewindSound(GtkWidget *widget, gpointer data);
 static void activateHeader(GtkApplication *app);
 static void activateToolbar();
-static void activateBody(TrackList* toShow);
+static void activateBody(TrackList *toShow);
 static void activate(GtkApplication *app, gpointer user_data);
 static void loadCSS(GtkApplication *app, gpointer user_data);
 static void saveSound(GtkWidget *widget, gpointer data);
@@ -22,9 +23,12 @@ static void openFile(GSimpleAction *action,
 static void on_file_chosen(GObject *source,
                            GAsyncResult *result,
                            gpointer user_data);
+static void deleteTrack(GtkWidget *widget, gpointer data);
 static void quit(GSimpleAction *action,
-                     GVariant *parameter,
-                     gpointer user_data);
+                 GVariant *parameter,
+                 gpointer user_data);
+
+static void onStreamFinished(void* _userData);
 
 static void tidy();
 

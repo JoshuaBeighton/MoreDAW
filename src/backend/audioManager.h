@@ -1,3 +1,5 @@
+#pragma once
+
 #include "portaudio.h"
 #include "wavHandler.h"
 #include "playAudio.h"

@@ -7,7 +7,7 @@ PaStream *stream = (PaStream *)0;
 WavInfo *rendered = (WavInfo *)0;
 TrackList *masterList = (TrackList *)0;
 State currentState = STOPPED;
-GtkBuilder* build;
+GtkBuilder *build;
 
 /**
  * Main Method of program.
@@ -59,7 +59,6 @@ static void activate(GtkApplication *app, gpointer user_data)
     activateToolbar();
     activateBody(masterList);
     activateHeader(app);
-    
 
     GtkBuilder *toolbarBuilder = gtk_builder_new_from_file("src/frontend/ui/templates/Menu.ui");
     GMenuModel *menu_model = G_MENU_MODEL(gtk_builder_get_object(toolbarBuilder, "menubar"));
@@ -78,7 +77,7 @@ static void activate(GtkApplication *app, gpointer user_data)
     gtk_window_present(GTK_WINDOW(window));
 
     // Unreference the builder.
-    //g_object_unref(build);
+    // g_object_unref(build);
 }
 
 static void loadCSS(GtkApplication *app, gpointer user_data)
@@ -97,8 +96,8 @@ static void loadCSS(GtkApplication *app, gpointer user_data)
 static void activateHeader(GtkApplication *app)
 {
     const GActionEntry app_actions[] = {
-        {"open", openFile, NULL, NULL,NULL},
-        {"quit", quit, NULL, NULL,NULL}};
+        {"open", openFile, NULL, NULL, NULL},
+        {"quit", quit, NULL, NULL, NULL}};
 
     g_action_map_add_action_entries(G_ACTION_MAP(app),
                                     app_actions,
@@ -117,6 +116,7 @@ static void activateToolbar()
     GtkWidget *stopButton;
     GtkWidget *recordButton;
     GtkWidget *saveButton;
+    GtkWidget *rewindButton;
     GtkWidget *toolbar;
 
     // Get pointers to the elements.
@@ -125,6 +125,7 @@ static void activateToolbar()
     stopButton = GTK_WIDGET(gtk_builder_get_object(build, "stopButton"));
     recordButton = GTK_WIDGET(gtk_builder_get_object(build, "recordButton"));
     saveButton = GTK_WIDGET(gtk_builder_get_object(build, "saveButton"));
+    rewindButton = GTK_WIDGET(gtk_builder_get_object(build, "rewindButton"));
     toolbar = GTK_WIDGET(gtk_builder_get_object(build, "header"));
 
     // Add the CSS classes.
@@ -133,6 +134,7 @@ static void activateToolbar()
     gtk_widget_add_css_class(stopButton, "my-button");
     gtk_widget_add_css_class(recordButton, "red-button");
     gtk_widget_add_css_class(saveButton, "my-button");
+    gtk_widget_add_css_class(rewindButton, "my-button");
     gtk_widget_add_css_class(toolbar, "header");
 
     // Connect the signals for the different buttons.
@@ -141,14 +143,17 @@ static void activateToolbar()
     g_signal_connect(stopButton, "clicked", G_CALLBACK(stopSound), NULL);
     g_signal_connect(recordButton, "clicked", G_CALLBACK(recordSound), NULL);
     g_signal_connect(saveButton, "clicked", G_CALLBACK(saveSound), NULL);
+    g_signal_connect(rewindButton, "clicked", G_CALLBACK(rewindSound), NULL);
 }
 
-char* formatTrackName(char* input){
+char *formatTrackName(char *input)
+{
     int len = strlen(input);
-    if (len < 15){
+    if (len < 15)
+    {
         return input;
     }
-    char* output = malloc(15);
+    char *output = malloc(15);
     output[0] = '.';
     output[1] = '.';
     output[2] = '.';
@@ -160,7 +165,7 @@ char* formatTrackName(char* input){
 /**
  * Activate the body of the window.
  */
-static void activateBody(TrackList* toShow)
+static void activateBody(TrackList *toShow)
 {
     // Get the two elements.
     GtkWidget *bodyBox;
@@ -178,25 +183,29 @@ static void activateBody(TrackList* toShow)
         TrackWidget *track_widget = (TrackWidget *)track;
 
         gtk_box_append((GtkBox *)bodyBox, track);
-        gtk_box_append((GtkBox *)track_widget_get_left(track_widget), label);
-
+        gtk_box_append((GtkBox *)track_widget_get_header(track_widget), label);
+        printf("i = %i. \n", i);
+        g_signal_connect(track_widget_get_delete_button(track_widget), "clicked", G_CALLBACK(deleteTrack), (gpointer)toShow->tracks[i]);
         // printf("Track Count: %i\n", toShow->trackCount);
         GtkWidget *waveform = (GtkWidget *)makeWaveform(waveformWidth, waveformHeight, toShow->tracks[i]);
         gtk_box_append((GtkBox *)track_widget_get_right(track_widget), waveform);
     }
 }
 
-static void* render(void* _args){
+static void *render(void *_args)
+{
     // Fill the buffer to start with.
-    fillBuffer(masterList,rendered,PLAY_BUFFER_SIZE);
+    fillBuffer(masterList, rendered, PLAY_BUFFER_SIZE);
     // Wait for the stream to start
-    while(Pa_IsStreamStopped(stream) == 1){
+    while (Pa_IsStreamStopped(stream) == 1)
+    {
         g_usleep(10);
     }
 
     // Loop until end of stream.
-    while(Pa_IsStreamActive(stream) == 1){
-        fillBuffer(masterList,rendered,PLAY_BUFFER_SIZE);
+    while (Pa_IsStreamActive(stream) == 1)
+    {
+        fillBuffer(masterList, rendered, PLAY_BUFFER_SIZE);
         g_usleep(10);
     }
     printf("DONE\n");
@@ -211,11 +220,12 @@ static void playAudio(GtkWidget *widget, gpointer data)
     // Initialise the stream.
     stream = initialise(rendered);
 
+    Pa_SetStreamFinishedCallback(stream,onStreamFinished);
     // If the audio is currently not playing, play audio and set the current state.
     if (currentState == STOPPED)
     {
         pthread_t renderThread;
-        pthread_create(&renderThread,NULL,render,NULL);
+        pthread_create(&renderThread, NULL, render, NULL);
         playFile(stream, rendered);
         currentState = PLAYING;
     }
@@ -232,6 +242,15 @@ static void pauseSound(GtkWidget *widget, gpointer data)
         pauseAudio(stream, rendered);
         currentState = STOPPED;
     }
+}
+
+/**
+ * Handler for the pause button.
+ */
+static void rewindSound(GtkWidget *widget, gpointer data)
+{
+    rendered->currentPointer = rendered->bulkData;
+    rendered->renderPointer = rendered->bulkData;
 }
 
 /**
@@ -278,11 +297,27 @@ static void saveSound(GtkWidget *widget, gpointer data)
     }
 }
 
+/**
+ * Handler for the save button.
+ */
+static void deleteTrack(GtkWidget *widget, gpointer data)
+{
+    WavInfo* track = (WavInfo*) data;
+    int index = 0;
+    for (int i = 0; i < masterList->trackCount; i++){
+        if (track == masterList->tracks[i]){
+            index = i;
+        }
+    }
+    removeTrackByIndex(masterList, index);
+    // remove waveform from screen: TODO
+}
+
 static void openFile(GSimpleAction *action,
                      GVariant *parameter,
                      gpointer user_data)
 {
-    GtkWindow *parent = (GtkWindow*)gtk_window_new();
+    GtkWindow *parent = (GtkWindow *)gtk_window_new();
 
     GtkFileDialog *dialog = gtk_file_dialog_new();
 
@@ -301,25 +336,30 @@ static void on_file_chosen(GObject *source,
     GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
     GError *err;
     GFile *file = gtk_file_dialog_open_finish(dialog, result, &err);
-    TrackList* newTracks = malloc(sizeof(TrackList));
+    TrackList *newTracks = malloc(sizeof(TrackList));
     newTracks->trackCount = 0;
     if (file)
     {
         char *filename = g_file_get_path(file);
-        addTrack_File(masterList,filename);
-        addTrack_File(newTracks,filename);
+        addTrack_File(masterList, filename);
+        addTrack_File(newTracks, filename);
         activateBody(newTracks);
         g_object_unref(file);
         free(newTracks);
     }
-    else{
-        fprintf(stderr,"Error: %s", err->message);
+    else
+    {
+        fprintf(stderr, "Error: %s", err->message);
     }
 }
 
+static void onStreamFinished(void* _userData){
+    currentState = STOPPED;
+}
+
 static void quit(GSimpleAction *action,
-                     GVariant *parameter,
-                     gpointer user_data)
+                 GVariant *parameter,
+                 gpointer user_data)
 {
     tidy();
 }

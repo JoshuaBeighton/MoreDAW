@@ -7,6 +7,8 @@ struct _TrackWidget
 
     GtkWidget *left;
     GtkWidget *right;
+    GtkWidget *header;
+    GtkWidget *delete_button;
 };
 
 G_DEFINE_TYPE(TrackWidget, track_widget, GTK_TYPE_BOX)
@@ -22,6 +24,8 @@ static void track_widget_class_init(TrackWidgetClass *klass)
     // Bind the children of the widget.
     gtk_widget_class_bind_template_child(widget_class, TrackWidget, left);
     gtk_widget_class_bind_template_child(widget_class, TrackWidget, right);
+    gtk_widget_class_bind_template_child(widget_class, TrackWidget, header);
+    gtk_widget_class_bind_template_child(widget_class, TrackWidget, delete_button);
 }
 
 /**
@@ -52,4 +56,20 @@ GtkWidget *track_widget_get_left(TrackWidget *self)
 GtkWidget *track_widget_get_right(TrackWidget *self)
 {
     return self->right;
+}
+
+/**
+ * Get a pointer to the right child of the track.
+ */
+GtkWidget *track_widget_get_header(TrackWidget *self)
+{
+    return self->header;
+}
+
+/**
+ * Get a pointer to the right child of the track.
+ */
+GtkWidget *track_widget_get_delete_button(TrackWidget *self)
+{
+    return self->delete_button;
 }
