@@ -75,7 +75,7 @@ TIDY:
     free(chunkIdentifier);
     free(fileType);
     output->name = fileName;
-    output->startTime = 10;
+    output->startTime = 0;
     return 0;
 }
 
@@ -219,16 +219,19 @@ void addTrack_File(TrackList *tl, char *fileName)
     addTrack_WavInfo(tl, track);
 }
 
-void removeTrackByIndex(TrackList* tl, int index){
+void removeTrackByIndex(TrackList *tl, int index)
+{
     // Ensure index is valid.
-    if (index > tl->trackCount || index < 0){
-        fprintf(stderr,"Attempted to delete invalid track, index: %i\n", index);
+    if (index > tl->trackCount || index < 0)
+    {
+        fprintf(stderr, "Attempted to delete invalid track, index: %i\n", index);
         return;
     }
     printf("Deleting track %i!\n", index);
     freeWavInfo(tl->tracks[index]);
-    for (int i = index; i < tl->trackCount - 1; i++){
-        tl->tracks[i] = tl->tracks[i+1];
+    for (int i = index; i < tl->trackCount - 1; i++)
+    {
+        tl->tracks[i] = tl->tracks[i + 1];
     }
     tl->trackCount -= 1;
 }
@@ -236,9 +239,10 @@ void removeTrackByIndex(TrackList* tl, int index){
 void addTrack_WavInfo(TrackList *tl, WavInfo *w)
 {
     tl->trackCount++;
-    WavInfo** newbuffer = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
-    if (newbuffer == NULL){
-        fprintf(stderr,"Failed to add new track.\n");
+    WavInfo **newbuffer = realloc(tl->tracks, sizeof(WavInfo *) * tl->trackCount);
+    if (newbuffer == NULL)
+    {
+        fprintf(stderr, "Failed to add new track.\n");
         return;
     }
     tl->tracks = newbuffer;
@@ -252,7 +256,7 @@ WavInfo *createRenderTarget(TrackList *tl)
     int sampleSizeInLargestFile = 0;
     for (int i = 0; i < tl->trackCount; i++)
     {
-        tl->tracks[i]->currentPointer = tl->tracks[i]->bulkData - getSampleOffset(tl->tracks[i]);
+        tl->tracks[i]->renderPointer = tl->tracks[i]->bulkData - getSampleOffset(tl->tracks[i]);
         if (tl->tracks[i]->dataSize + getSampleOffset(tl->tracks[i]) > largestFileSize)
         {
             largestFileSize = tl->tracks[i]->dataSize + getSampleOffset(tl->tracks[i]);
@@ -267,13 +271,41 @@ WavInfo *createRenderTarget(TrackList *tl)
     result->sampleRate = tl->tracks[0]->sampleRate;
     result->channels = 2;
     printf("Result data size: %i\n", result->dataSize);
-    
+
     return result;
 }
 
-void fillBuffer(TrackList* tl, WavInfo* w, int bufferSize){
-    int sum;
-    for (int i = 0; i< bufferSize - (w->renderPointer - w->currentPointer); i++)
+/**
+ * Fill the buffer, rendering audio ahead of the playhead.
+ * If reached end of track this will return 1, otherwise it will return 0.
+ */
+int fillBuffer(TrackList *tl, WavInfo *w, int bufferSize)
+{
+    int sum = 0;
+    int returnVal = 0;
+
+    // Calculate how many ints we can write into the buffer
+    int toFill = (bufferSize - (w->renderPointer - w->currentPointer)) / sizeof(int);
+
+    // Clamp toFill to minimum 0
+    if (toFill < 0)
+    {
+        toFill = 0;
+    }
+
+    // Remaining space in buffer (in ints)
+    int remainingInts = ((w->bulkData + w->dataSize) - w->renderPointer) / sizeof(int);
+
+    // Avoid writing past the end of allocated memory
+    if (toFill > remainingInts)
+    {
+        toFill = remainingInts;
+        printf("\n\nReached end so only filling %i ints (%lu bytes).\n\n", toFill, toFill * sizeof(int));
+        returnVal = 1;
+    }
+
+    // Fill the buffer
+    for (int i = 0; i < toFill; i++)
     {
         for (int j = 0; j < tl->trackCount; j++)
         {
@@ -283,6 +315,8 @@ void fillBuffer(TrackList* tl, WavInfo* w, int bufferSize){
         w->renderPointer += sizeof(int);
         sum = 0;
     }
+
+    return returnVal;
 }
 
 int getIntRepresentation(WavInfo *w)

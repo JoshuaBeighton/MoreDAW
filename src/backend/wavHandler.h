@@ -31,7 +31,7 @@ int getTotalDuration(WavInfo*);
 int getElapsedDuration(WavInfo*);
 int writeWavFile(char*, WavInfo*);
 int convert24bitToInt(__uint8_t *bytes);
-void fillBuffer(TrackList* tl, WavInfo* w, int bufferSize);
+int fillBuffer(TrackList* tl, WavInfo* w, int bufferSize);
 void removeTrackByIndex(TrackList* tl, int index);
 int getSampleOffset(WavInfo* w);
 int getIntRepresentation(WavInfo *w);

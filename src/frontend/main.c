@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     rendered = malloc(sizeof(WavInfo));
 
     // Add two tracks to the list.
-    addTrack_File(masterList, "res/audio/clap32.wav");
+    addTrack_File(masterList, "res/audio/boom16.wav");
 
     // Get a pointer to the main app.
     GtkApplication *app;
@@ -173,7 +173,6 @@ static void activateBody(TrackList *toShow)
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
     int waveformHeight = 100;
     int waveformWidth = 1000;
-    printf("%p\n", toShow);
     printf("%i\n", toShow->trackCount);
     for (int i = 0; i < toShow->trackCount; i++)
     {
@@ -194,6 +193,7 @@ static void activateBody(TrackList *toShow)
 
 static void *render(void *_args)
 {
+    printf("Starting thread to render, render pointer at %li/%i\n", (rendered->renderPointer - rendered->bulkData), rendered->dataSize);
     // Fill the buffer to start with.
     fillBuffer(masterList, rendered, PLAY_BUFFER_SIZE);
     // Wait for the stream to start
@@ -201,20 +201,23 @@ static void *render(void *_args)
     {
         g_usleep(10);
     }
-
+    int finished = 0;
     // Loop until end of stream.
-    while (Pa_IsStreamActive(stream) == 1)
+    while (Pa_IsStreamActive(stream) == 1 && finished == 0)
     {
-        fillBuffer(masterList, rendered, PLAY_BUFFER_SIZE);
+        finished = fillBuffer(masterList, rendered, PLAY_BUFFER_SIZE);
         g_usleep(10);
     }
-    printf("DONE\n");
+    printf("Rendering Complete\n");
     return NULL;
 }
 
 // Handler for the play button.
 static void playAudio(GtkWidget *widget, gpointer data)
 {
+    if (masterList->trackCount == 0){
+        return;
+    }
     rendered = createRenderTarget(masterList);
 
     // Initialise the stream.
@@ -228,6 +231,7 @@ static void playAudio(GtkWidget *widget, gpointer data)
         pthread_create(&renderThread, NULL, render, NULL);
         playFile(stream, rendered);
         currentState = PLAYING;
+        printf("Playing!\n");
     }
 }
 
@@ -241,6 +245,7 @@ static void pauseSound(GtkWidget *widget, gpointer data)
     {
         pauseAudio(stream, rendered);
         currentState = STOPPED;
+        printf("Paused!\n");
     }
 }
 
@@ -251,6 +256,8 @@ static void rewindSound(GtkWidget *widget, gpointer data)
 {
     rendered->currentPointer = rendered->bulkData;
     rendered->renderPointer = rendered->bulkData;
+    fillBuffer(masterList,rendered,PLAY_BUFFER_SIZE);
+    printf("Rewinded!\n");
 }
 
 /**
@@ -263,6 +270,7 @@ static void stopSound(GtkWidget *widget, gpointer data)
     {
         stopAudio(stream, rendered);
         currentState = STOPPED;
+        printf("Stopped!\n");
     }
 }
 

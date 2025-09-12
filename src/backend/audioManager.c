@@ -48,7 +48,6 @@ PaStream *initialise(WavInfo *w)
                                paPlayCallback, /* this is your callback function */
                                w);             /*This is a pointer that will be passed to
                                                              your callback*/
-    printf("%p\n",stream);
     return stream;
 }
 
@@ -59,7 +58,6 @@ void playFile(PaStream *stream, WavInfo *w)
 {
     // Initialise Port Audio
     PaError err = Pa_Initialize();
-    printf("%p\n", stream);
     // If Audio is still being played, do nothing.
     if (Pa_IsStreamActive(stream) == 1)
     {
@@ -73,7 +71,6 @@ void playFile(PaStream *stream, WavInfo *w)
     // If the audio is finished.
     if (w->currentPointer - w->bulkData == w->dataSize)
     {
-        printf("%p\n", w);
         w->currentPointer = w->bulkData;
     }
     // Reset the pointer to the start of the wav file.
