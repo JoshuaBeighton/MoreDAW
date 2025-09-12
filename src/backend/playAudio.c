@@ -1,5 +1,4 @@
 #include "playAudio.h"
-#include "wavHandler.h"
 
 /* This routine will be called by the PortAudio engine when audio is needed.
  */

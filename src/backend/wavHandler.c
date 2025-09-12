@@ -1,8 +1,4 @@
 #include "wavHandler.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 
 int readWavFile(char *fileName, WavInfo *output)
 {

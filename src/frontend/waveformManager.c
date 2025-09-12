@@ -1,5 +1,4 @@
 #include "waveformManager.h"
-#include <stdio.h>
 
 /**
  * Get the height of the wave for a specific time.
