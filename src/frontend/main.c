@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     rendered = malloc(sizeof(WavInfo));
 
     // Add two tracks to the list.
-    addTrack_File(masterList, "res/audio/boom16.wav");
+    addTrack_File(masterList, "res/audio/ThisIsInst.wav");
 
     // Get a pointer to the main app.
     GtkApplication *app;

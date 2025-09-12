@@ -325,23 +325,27 @@ int getIntRepresentation(WavInfo *w)
 
     if (w->renderPointer >= w->bulkData + w->dataSize || w->renderPointer < w->bulkData)
         return 0;
-    w->renderPointer += (w->sampleSize / 8);
+
     switch (w->sampleSize)
     {
     case 16:
-        total = ((int)*((short *)w->renderPointer)) << 17;
+        total = ((int)(*((int16_t *)w->renderPointer))) << 16;
         break;
 
     case 24:
         total = convert24bitToInt(w->renderPointer);
         break;
+
     case 32:
-        total = *((int *)w->renderPointer);
+        total = *((int32_t *)w->renderPointer);
         break;
+
     default:
         fprintf(stderr, "Invalid Sample Size\n");
         break;
     }
+
+    w->renderPointer += (w->sampleSize / 8);
     return total;
 }
 
@@ -350,29 +354,14 @@ int getSampleOffset(WavInfo *w)
     return w->startTime * w->sampleRate * w->sampleSize / 8;
 }
 
-int convert24bitToInt(__uint8_t *bytes)
+int32_t convert24bitToInt(uint8_t *bytes)
 {
-    // Read the 3 bytes as a 24-bit unsigned integer
-    int32_t total = ((uint32_t)bytes[0] << 16) |
-                    ((uint32_t)bytes[1] << 8) |
-                    (uint32_t)bytes[2];
+    // WAV: little-endian order: [low][mid][high]
+    int32_t value = (bytes[0]) | (bytes[1] << 8) | (bytes[2] << 16);
 
-    // Sign-extend to 32 bits
-    if (total & 0x00800000) // sign bit of 24-bit number
-    {
-        total |= 0xFF000000;
-    }
+    // Sign extend manually (if bit 23 is set, fill the high 8 bits with 1s)
+    if (value & 0x00800000)
+        value |= 0xFF000000;
 
-    // Now scale from signed 24-bit range [-8388608, 8388607]
-    // to signed 32-bit range [-2147483648, 2147483647]
-    if (total >= 0)
-    {
-        total = (int32_t)((int64_t)total * 2147483647LL / 8388607LL);
-    }
-    else
-    {
-        total = (int32_t)((int64_t)total * -2147483648LL / -8388608LL);
-    }
-    // printf("%2x %2x %2x -> %i\n", bytes[0],bytes[1],bytes[2],total);
-    return total;
+    return value << 8;
 }
