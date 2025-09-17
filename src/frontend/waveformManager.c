@@ -1,6 +1,6 @@
 #include "waveformManager.h"
 int hzoom = 10;
-int vzoom = 2;
+double vzoom = 3;
 
 int getHeight(int *sampleHeight, int index, int width, int imageHeight, WavInfo *w)
 {
@@ -22,22 +22,25 @@ int getHeight(int *sampleHeight, int index, int width, int imageHeight, WavInfo 
     if (w->sampleSize == 16) {
         short *samples = (short *)(w->bulkData + byteOffset);
         sample = samples[0];  // first channel
-        int amplitude = (sample * halfway) / G_MAXINT16;
-        *sampleHeight = (amplitude * vzoom) + halfway;
+        int amplitude = (sample * halfway) / G_MAXINT16 * vzoom;
+        if (amplitude > halfway) amplitude = halfway;
+        *sampleHeight = amplitude + halfway;
         return 0;
     }
     else if (w->sampleSize == 24) {
         uint8_t *ptr = (uint8_t *)(w->bulkData + byteOffset);
         sample = convert24bitToInt(ptr);  // must return signed 32-bit
-        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway;
-        *sampleHeight = (amplitude * vzoom) + halfway;
+        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway * vzoom;
+        if (amplitude > halfway) amplitude = halfway;
+        *sampleHeight = amplitude + halfway;
         return 0;
     }
     else if (w->sampleSize == 32) {
         int *samples = (int *)(w->bulkData + byteOffset);
         sample = samples[0];
-        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway;
-        *sampleHeight = (amplitude * vzoom) + halfway;
+        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway * vzoom;
+        if (amplitude > halfway) amplitude = halfway;
+        *sampleHeight = amplitude + halfway;
         return 0;
     }
 
