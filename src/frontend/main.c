@@ -64,6 +64,7 @@ static void activate(GtkApplication *app, gpointer user_data)
     GMenuModel *menu_model = G_MENU_MODEL(gtk_builder_get_object(toolbarBuilder, "menubar"));
 
     GtkWidget *menu_bar = gtk_popover_menu_bar_new_from_model(menu_model);
+    gtk_widget_add_css_class(menu_bar,"menubar");
     GtkWidget *top_level_box = GTK_WIDGET(gtk_builder_get_object(build, "topBox"));
     gtk_box_prepend(GTK_BOX(top_level_box), menu_bar);
 
@@ -171,6 +172,7 @@ static void activateBody(TrackList *toShow)
     GtkWidget *bodyBox;
 
     bodyBox = GTK_WIDGET(gtk_builder_get_object(build, "body"));
+    gtk_widget_add_css_class(GTK_WIDGET(gtk_builder_get_object(build, "topBox")), "body");
     int waveformHeight = 100;
     int waveformWidth = 1000;
     printf("%i\n", toShow->trackCount);
