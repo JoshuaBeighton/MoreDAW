@@ -1,61 +1,47 @@
 #include "waveformManager.h"
+int hzoom = 10;
+int vzoom = 2;
 
-/**
- * Get the height of the wave for a specific time.
- */
-int getHeight(int index, int width, int height, WavInfo *w)
+int getHeight(int *sampleHeight, int index, int width, int imageHeight, WavInfo *w)
 {
-    // Get the total amount of samples in the wav file.
-    long totalSamples = w->dataSize / w->sampleSize * 8;
+    int timeOfSample = (hzoom * index) - w->startTime;
 
-    // Get the index in the samples.
-    long sampleIndex = totalSamples * index / width / w->sampleSize * 8;
+    // Which sample number in the stream?
+    long sampleIndex = (timeOfSample * w->sampleRate) / 1000;
 
-    // Get the height of halfway up the image.
-    int halfway = height / 2;
-    if (w->sampleSize == 16)
-    {
-        // Get a pointer to the start of the samples.
-        short *samples = (short *)w->bulkData;
+    int bytesPerSample = w->sampleSize / 8;
+    long byteOffset = sampleIndex * bytesPerSample * w->channels;
 
-        // Get the sample at the required index.
-        short sample = samples[sampleIndex];
-
-        // Get the height above / below the index that it should be.
-        int amplitude = ((sample << 4) * halfway) / G_MAXINT16;
-
-        // Return the height the wave should be.
-        return amplitude + halfway;
+    if (byteOffset < 0 || byteOffset + bytesPerSample > w->dataSize) {
+        return 1;
     }
-    else if (w->sampleSize == 24)
-    {
-        // Get a pointer to the start of the samples.
-        u_int8_t *samples = (u_int8_t *)(w->bulkData+ sampleIndex);
 
-        // Get the sample at the required index.
-        int sample = convert24bitToInt(samples);
+    int halfway = imageHeight / 2;
+    int sample = 0;
 
-        // Get the height above / below the index that it should be.
-        int amplitude = height * (double)((double)(sample) / (double)G_MAXINT32);
-
-        // Return the height the wave should be.
-        return amplitude + halfway;
+    if (w->sampleSize == 16) {
+        short *samples = (short *)(w->bulkData + byteOffset);
+        sample = samples[0];  // first channel
+        int amplitude = (sample * halfway) / G_MAXINT16;
+        *sampleHeight = (amplitude * vzoom) + halfway;
+        return 0;
     }
-    else if (w->sampleSize == 32)
-    {
-        // Get a pointer to the start of the samples.
-        int *samples = (int *)w->bulkData;
-
-        // Get the sample at the required index.
-        int sample = samples[sampleIndex];
-
-        // Get the height above / below the index that it should be.
-        int amplitude = height * (double)((double)(sample << 4) / (double)G_MAXINT32);
-
-        // Return the height the wave should be.
-        return amplitude + halfway;
+    else if (w->sampleSize == 24) {
+        uint8_t *ptr = (uint8_t *)(w->bulkData + byteOffset);
+        sample = convert24bitToInt(ptr);  // must return signed 32-bit
+        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway;
+        *sampleHeight = (amplitude * vzoom) + halfway;
+        return 0;
     }
-    return 0;
+    else if (w->sampleSize == 32) {
+        int *samples = (int *)(w->bulkData + byteOffset);
+        sample = samples[0];
+        int amplitude = ((double)sample / (double)G_MAXINT32) * (double)halfway;
+        *sampleHeight = (amplitude * vzoom) + halfway;
+        return 0;
+    }
+
+    return 1;
 }
 
 /**
@@ -86,8 +72,14 @@ static void draw_function(GtkDrawingArea *area,
     // Loop through the image and draw all the lines.
     for (int i = 0; i < width; i++)
     {
-        currentHeight = getHeight(i, width, height, (WavInfo *)data);
-        cairo_line_to(cr, i, currentHeight);
+        if (getHeight(&currentHeight, i, width, height, (WavInfo *)data) == 1)
+        {
+            cairo_move_to(cr, i, height / 2);
+        }
+        else
+        {
+            cairo_line_to(cr, i, currentHeight);
+        }
     }
 
     // Render the lines.
